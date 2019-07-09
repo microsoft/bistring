@@ -8,15 +8,17 @@ For example:
 
 ```python
 >>> from bistring import bistr
->>> s = bistr('𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌')
+>>> s = bistr('𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 🐶')
 >>> s = s.normalize('NFKD')     # Unicode normalization
 >>> s = s.casefold()            # Case-insensitivity
->>> s = s.sub(r'[^a-z ]+', '')  # Strip everything but letters and spaces
+>>> s = s.replace('🦊', 'fox')  # Replace emoji with text
+>>> s = s.replace('🐶', 'dog')
+>>> s = s.sub(r'[^\w\s]+', '')  # Strip everything but letters and spaces
 >>> s = s[:19]                  # Extract a substring
 >>> s.modified                  # The modified substring, after changes
 'the quick brown fox'
 >>> s.original                  # The original substring, before changes
-'𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝'
+'𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊'
 ```
 
 This allows you to perform very aggressive text processing completely invisibly.
