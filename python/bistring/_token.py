@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import icu
 import threading
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Sequence
 
 from ._alignment import Alignment
 from ._bistr import bistr
@@ -33,8 +33,19 @@ class Token:
     """
 
     text: bistr
+    """
+    The actual text of the token.
+    """
+
     start: int
+    """
+    The start position of the token.
+    """
+
     end: int
+    """
+    The end position of the token.
+    """
 
     @property
     def original(self) -> str:
@@ -71,8 +82,16 @@ class Tokenization:
     """
 
     text: bistr
-    _tokens: Iterable[Token]
+    """
+    The text that was tokenized.
+    """
+
     alignment: Alignment
+    """
+    The alignment from text indices to token indices.
+    """
+
+    _tokens: Sequence[Token]
 
     def __init__(self, text: bistr, tokens: Iterable[Token]):
         """
@@ -183,6 +202,17 @@ class Tokenizer(ABC):
 
     @abstractmethod
     def tokenize(self, text: String) -> Tokenization:
+        """
+        Tokenize some text.
+
+        :param text: The text to tokenize, as either an `str` or
+                     :class:`~bistring.bistr`.  A plain `str` should be
+                     converted to a `bistr` before processing.
+
+        :returns: A :class:`~bistring.Tokenization` holding the text and its
+                  tokens.
+        """
+
         pass
 
 

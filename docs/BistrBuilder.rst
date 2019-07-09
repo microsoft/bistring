@@ -1,0 +1,4 @@
+BistrBuilder
+============
+
+.. autoclass:: bistring.BistrBuilder

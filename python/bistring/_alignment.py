@@ -57,7 +57,10 @@ class Alignment:
     def __repr__(self):
         i, j = self._original[0], self._original[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(i, j + 1)):
-            return f'Alignment.identity({self._original[0]}, {self._original[-1]})'
+            if i == 0:
+                return f'Alignment.identity({j})'
+            else:
+                return f'Alignment.identity({i}, {j})'
         else:
             return 'Alignment([' + ', '.join(map(repr, self)) + '])'
 
@@ -125,7 +128,14 @@ class Alignment:
         else:
             return (self._original[index], self._modified[index])
 
-    def shift(self, delta_o, delta_m):
+    def shift(self, delta_o: int, delta_m: int):
+        """
+        Shift this alignment.
+
+        :param delta_o: The distance to shift the original sequence.
+        :param delta_m: The distance to shift the modified sequence.
+        """
+
         return self._create(
             [o + delta_o for o in self._original],
             [m + delta_m for m in self._modified],
