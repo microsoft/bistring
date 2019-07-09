@@ -105,13 +105,15 @@ def test_normalize():
 
 
 def test_readme():
-    bs = bistr("𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌")
-    bs = bs.normalize("NFKD")
+    bs = bistr('𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 🐶')
+    bs = bs.normalize('NFKD')
     bs = bs.casefold()
-    bs = bs.sub(r"[^a-z ]+", "")
+    bs = bs.replace('🦊', 'fox')
+    bs = bs.replace('🐶', 'dog')
+    bs = bs.sub(r'[^\w\s]+', '')
     bs = bs[:19]
     assert bs.modified == "the quick brown fox"
-    assert bs.original == "𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝"
+    assert bs.original == "𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊"
 
 
 def test_equality():
