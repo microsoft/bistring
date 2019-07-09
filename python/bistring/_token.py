@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+from __future__ import annotations
+
 __all__ = [
     "Token",
     "Tokenization",
@@ -47,7 +49,7 @@ class Token:
         return self.text.modified
 
     @classmethod
-    def slice(cls, text: bistr, start: int, end: int) -> "Token":
+    def slice(cls, text: bistr, start: int, end: int) -> Token:
         """
         Create a Token from a slice of a bistr.
         """
@@ -145,14 +147,14 @@ class Tokenization:
         text_bounds = self.text.alignment.modified_bounds(*args)
         return self.alignment.modified_bounds(text_bounds)
 
-    def slice_by_text(self, *args) -> "Tokenization":
+    def slice_by_text(self, *args) -> Tokenization:
         """
         Map a span of text to the corresponding span of tokens.
         """
         i, j = self.bounds_for_text(*args)
         return self[i:j]
 
-    def slice_by_original(self, *args) -> "Tokenization":
+    def slice_by_original(self, *args) -> Tokenization:
         """
         Map a span of the original text to the corresponding span of tokens.
         """

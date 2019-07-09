@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+from __future__ import annotations
+
 __all__ = ["Alignment"]
 
 import bisect
@@ -38,7 +40,7 @@ class Alignment:
             raise ValueError("No sequence positions to align")
 
     @classmethod
-    def _create(cls, original: List[int], modified: List[int]) -> "Alignment":
+    def _create(cls, original: List[int], modified: List[int]) -> Alignment:
         result = super().__new__(cls)
         result._original = original
         result._modified = modified
@@ -89,17 +91,17 @@ class Alignment:
 
     @overload
     @classmethod
-    def identity(cls, length: int) -> "Alignment":
+    def identity(cls, length: int) -> Alignment:
         ...
 
     @overload
     @classmethod
-    def identity(cls, start: int, stop: int) -> "Alignment":
+    def identity(cls, start: int, stop: int) -> Alignment:
         ...
 
     @overload
     @classmethod
-    def identity(cls, bounds: Range) -> "Alignment":
+    def identity(cls, bounds: Range) -> Alignment:
         ...
 
     @classmethod
@@ -167,7 +169,7 @@ class Alignment:
     def modified_slice(self, *args) -> slice:
         return slice(*self.modified_bounds(*args))
 
-    def slice_by_original(self, *args) -> "Alignment":
+    def slice_by_original(self, *args) -> Alignment:
         start, stop = self._parse_args(args)
         first, last = self._search(self._original, start, stop)
         original = self._original[first:last+1]
@@ -175,7 +177,7 @@ class Alignment:
         modified = self._modified[first:last+1]
         return self._create(original, modified)
 
-    def slice_by_modified(self, *args) -> "Alignment":
+    def slice_by_modified(self, *args) -> Alignment:
         start, stop = self._parse_args(args)
         first, last = self._search(self._modified, start, stop)
         original = self._original[first:last+1]
@@ -204,7 +206,7 @@ class Alignment:
 
         return self._create(self._original + o_orig, self._modified + o_mod)
 
-    def compose(self, other: "Alignment") -> "Alignment":
+    def compose(self, other: Alignment) -> Alignment:
         """
         Return a new alignment equivalent to applying this one first, then the
         other.
@@ -243,7 +245,7 @@ class Alignment:
 
         return self._create(original, modified)
 
-    def inverse(self) -> "Alignment":
+    def inverse(self) -> Alignment:
         """
         The inverse of this alignment, from the modified to the original sequence.
         """

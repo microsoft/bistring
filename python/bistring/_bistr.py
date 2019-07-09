@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+from __future__ import annotations
+
 __all__ = ["bistr"]
 
 from typing import Iterable, Optional, Tuple
@@ -120,13 +122,13 @@ class bistr:
     def __delattr__(self, name):
         raise AttributeError("bistr is immutable")
 
-    def inverse(self) -> "bistr":
+    def inverse(self) -> bistr:
         """
         The inverse of this string, swapping the original and modified strings.
         """
         return bistr(self.modified, self.original, self.alignment.inverse())
 
-    def chunks(self) -> Iterable["bistr"]:
+    def chunks(self) -> Iterable[bistr]:
         """
         All the chunks of associated text in this string.
         """
@@ -140,26 +142,26 @@ class bistr:
         from ._builder import BistrBuilder
         return BistrBuilder(self)
 
-    def casefold(self) -> "bistr":
+    def casefold(self) -> bistr:
         from ._icu import casefold
         return casefold(self)
 
-    def lower(self, locale: Optional[str] = None) -> "bistr":
+    def lower(self, locale: Optional[str] = None) -> bistr:
         from ._icu import lower
         return lower(self, locale)
 
-    def upper(self, locale: Optional[str] = None) -> "bistr":
+    def upper(self, locale: Optional[str] = None) -> bistr:
         from ._icu import upper
         return upper(self, locale)
 
-    def title(self, locale: Optional[str] = None) -> "bistr":
+    def title(self, locale: Optional[str] = None) -> bistr:
         from ._icu import title
         return title(self, locale)
 
-    def expandtabs(self, tabsize=8) -> "bistr":
+    def expandtabs(self, tabsize=8) -> bistr:
         return self.replace("\t", " " * tabsize)
 
-    def replace(self, old: str, new: str, count: Optional[int] = None) -> "bistr":
+    def replace(self, old: str, new: str, count: Optional[int] = None) -> bistr:
         builder = self._builder()
 
         pos = 0
@@ -178,7 +180,7 @@ class bistr:
         builder.skip_rest()
         return builder.build()
 
-    def sub(self, regex: Regex, repl: str) -> "bistr":
+    def sub(self, regex: Regex, repl: str) -> bistr:
         builder = self._builder()
         builder.replace_all(regex, repl)
         return builder.build()
@@ -189,7 +191,7 @@ class bistr:
         else:
             return lambda c: c in chars
 
-    def strip(self, chars: Optional[str] = None) -> "bistr":
+    def strip(self, chars: Optional[str] = None) -> bistr:
         should_strip = self._stripper(chars)
 
         length = len(self)
@@ -207,7 +209,7 @@ class bistr:
         builder.discard_rest()
         return builder.build()
 
-    def lstrip(self, chars: Optional[str] = None) -> "bistr":
+    def lstrip(self, chars: Optional[str] = None) -> bistr:
         should_strip = self._stripper(chars)
 
         length = len(self)
@@ -220,7 +222,7 @@ class bistr:
         builder.skip_rest()
         return builder.build()
 
-    def rstrip(self, chars: Optional[str] = None) -> "bistr":
+    def rstrip(self, chars: Optional[str] = None) -> bistr:
         should_strip = self._stripper(chars)
 
         length = len(self)
