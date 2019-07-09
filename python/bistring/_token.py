@@ -13,12 +13,12 @@ __all__ = [
 
 from dataclasses import dataclass
 import icu
-import re
 import threading
 from typing import Callable, Iterable
 
 from ._alignment import Alignment
 from ._bistr import bistr
+from ._regex import compile_regex
 from ._typing import Bounds, Regex, String
 
 
@@ -176,7 +176,7 @@ class RegexTokenizer:
     """
 
     def __init__(self, regex: Regex):
-        self._pattern = re.compile(regex)
+        self._pattern = compile_regex(regex)
 
     def tokenize(self, text: String) -> Tokenization:
         text = bistr(text)
@@ -192,7 +192,7 @@ class SplittingTokenizer:
     """
 
     def __init__(self, regex: Regex):
-        self._pattern = re.compile(regex)
+        self._pattern = compile_regex(regex)
 
     def tokenize(self, text: String) -> Tokenization:
         text = bistr(text)

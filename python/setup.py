@@ -18,12 +18,18 @@ setup(
     ],
     test_suite="tests",
     setup_requires=[
-        "pytest-runner >= 4.2",
+        "pytest-runner",
     ],
     install_requires=[
-        "pyicu >= 2.1",
+        "pyicu",
     ],
+    extras_require={
+        "test": [
+            "pytest",
+            "regex",
+        ],
+    },
     tests_require=[
-        "pytest >= 3.8.2",
+        "bistring[test]",
     ],
 )

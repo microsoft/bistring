@@ -22,10 +22,11 @@ steps:
 - script: |
     sudo apt-get -qy install libicu-dev
     python -m pip install --upgrade pip
-    CFLAGS="-std=c++11" pip install -e ./python
+    CFLAGS="-std=c++11" pip install pyicu
+    pip install -e './python[test]'
   displayName: 'Install dependencies'
 
 - script: |
-    pip install pytest pytest-azurepipelines
+    pip install pytest-azurepipelines
     pytest
   displayName: 'pytest'

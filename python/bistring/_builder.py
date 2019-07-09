@@ -3,12 +3,12 @@
 
 __all__ = ["BistrBuilder"]
 
-import re
 from typing import Iterable, List, Match, Optional, Pattern, Tuple
 
 from ._alignment import Alignment
 from ._bistr import bistr
-from ._typing import Bounds, Regex, String
+from ._regex import compile_regex, expand_template
+from ._typing import Bounds, Regex, Replacement, String
 
 
 class BistrBuilder:
@@ -142,15 +142,15 @@ class BistrBuilder:
             self._advance(y[0] - x[0], y[1] - x[1])
 
     def _match(self, regex: Regex) -> Optional[Match]:
-        pattern = re.compile(regex)
+        pattern = compile_regex(regex)
         return pattern.match(self.current, pos=self._opos)
 
     def _search(self, regex: Regex) -> Optional[Match]:
-        pattern = re.compile(regex)
+        pattern = compile_regex(regex)
         return pattern.search(self.current, pos=self._opos)
 
     def _finditer(self, regex: Regex) -> Iterable[Match]:
-        pattern = re.compile(regex)
+        pattern = compile_regex(regex)
         return pattern.finditer(self.current, pos=self._opos)
 
     def skip_match(self, regex: Regex) -> bool:
@@ -175,36 +175,36 @@ class BistrBuilder:
         else:
             return False
 
-    def replace_match(self, regex: Regex, repl: str) -> bool:
+    def replace_match(self, regex: Regex, repl: Replacement) -> bool:
         """
         Replace a substring that matches a regex.
         """
         match = self._match(regex)
         if match:
-            self.replace(match.end() - match.start(), match.expand(repl))
+            self.replace(match.end() - match.start(), expand_template(match, repl))
             return True
         else:
             return False
 
-    def replace_next(self, regex: Regex, repl: str) -> bool:
+    def replace_next(self, regex: Regex, repl: Replacement) -> bool:
         """
         Replace the next occurence of a regex.
         """
         match = self._search(regex)
         if match:
             self.skip(match.start() - self._opos)
-            self.replace(match.end() - match.start(), match.expand(repl))
+            self.replace(match.end() - match.start(), expand_template(match, repl))
             return True
         else:
             return False
 
-    def replace_all(self, regex: Regex, repl: str):
+    def replace_all(self, regex: Regex, repl: Replacement):
         """
         Replace all occurences of a regex.
         """
         for match in self._finditer(regex):
             self.skip(match.start() - self._opos)
-            self.replace(match.end() - match.start(), match.expand(repl))
+            self.replace(match.end() - match.start(), expand_template(match, repl))
         self.skip_rest()
 
     def build(self):

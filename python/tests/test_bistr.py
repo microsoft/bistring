@@ -133,3 +133,12 @@ def test_equality():
         (15, 11),
     ]))
     assert bs1 == bs2
+
+
+def test_alternative_regex():
+    import regex
+
+    bs = bistr("The quick, brown 🦊 jumps over the lazy 🐶")
+    bs = bs.sub(regex.compile(r"\pS"), lambda m: unicodedata.name(m.group()))
+    assert bs[17:25] == bistr("🦊", "FOX FACE")
+    assert bs[46:] == bistr("🐶", "DOG FACE")
