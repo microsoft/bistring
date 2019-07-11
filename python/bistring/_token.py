@@ -6,6 +6,7 @@ from __future__ import annotations
 __all__ = [
     'Token',
     'Tokenization',
+    'Tokenizer',
     'RegexTokenizer',
     'SplittingTokenizer',
     'CharacterTokenizer',
@@ -13,6 +14,7 @@ __all__ = [
     'SentenceTokenizer',
 ]
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import icu
 import threading
@@ -174,7 +176,17 @@ class Tokenization:
         return self.original_bounds(self.bounds_for_original(*args))
 
 
-class RegexTokenizer:
+class Tokenizer(ABC):
+    """
+    Abstract base class for tokenizers.
+    """
+
+    @abstractmethod
+    def tokenize(self, text: String) -> Tokenization:
+        pass
+
+
+class RegexTokenizer(Tokenizer):
     """
     Breaks text into tokens based on a regex.
     """
@@ -190,7 +202,7 @@ class RegexTokenizer:
         return Tokenization(text, tokens)
 
 
-class SplittingTokenizer:
+class SplittingTokenizer(Tokenizer):
     """
     Splits text into tokens based on a regex.
     """
@@ -216,7 +228,7 @@ class SplittingTokenizer:
         return Tokenization(text, tokens)
 
 
-class _IcuTokenizer:
+class _IcuTokenizer(Tokenizer):
     """
     Base class for ICU BreakIterator-based tokenizers.
     """

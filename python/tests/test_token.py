@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-from bistring import bistr, Token, Tokenization
+from bistring import bistr, Token, Tokenization, Tokenizer
 
 
 def test_tokenization():
@@ -41,6 +41,7 @@ def test_regex_tokenizer():
     text = text.casefold()
 
     tokenizer = RegexTokenizer(r'\w+')
+    assert isinstance(tokenizer, Tokenizer)
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -60,6 +61,7 @@ def test_splitting_tokenizer():
     text = text.casefold()
 
     tokenizer = SplittingTokenizer(r'\s+')
+    assert isinstance(tokenizer, Tokenizer)
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -77,6 +79,7 @@ def test_character_tokenizer():
     text = bistr(' 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ')
 
     tokenizer = CharacterTokenizer('en_US')
+    assert isinstance(tokenizer, Tokenizer)
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -89,6 +92,7 @@ def test_word_tokenizer():
     text = bistr(' 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ')
 
     tokenizer = WordTokenizer('en_US')
+    assert isinstance(tokenizer, Tokenizer)
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -106,6 +110,7 @@ def test_sentence_tokenizer():
     text = bistr('The following sentence is true.  The preceeding sentence, surprisingly, is false.')
 
     tokenizer = SentenceTokenizer('en_US')
+    assert isinstance(tokenizer, Tokenizer)
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
