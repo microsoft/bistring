@@ -1,7 +1,36 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-from bistring import bistr
+from bistring import bistr, Token, Tokenization
+
+
+def test_tokenization():
+    text = bistr("The quick, brown fox jumps over the lazy dog")
+    text = text.replace(",", "")
+
+    tokens = Tokenization(text, [
+        Token.slice(text, 0, 3),
+        Token.slice(text, 4, 9),
+        Token.slice(text, 10, 15),
+        Token.slice(text, 16, 19),
+        Token.slice(text, 20, 25),
+        Token.slice(text, 26, 30),
+        Token.slice(text, 31, 34),
+        Token.slice(text, 35, 39),
+        Token.slice(text, 40, 43),
+    ])
+
+    tokens = tokens[1:-1]
+    assert tokens.text.original == "quick, brown fox jumps over the lazy"
+    assert tokens.text.modified == "quick brown fox jumps over the lazy"
+    assert tokens.text_bounds(1, 3) == (6, 15)
+    assert tokens.original_bounds(1, 3) == (7, 16)
+    assert tokens.bounds_for_text(8, 14) == (1, 3)
+    assert tokens.bounds_for_original(9, 15) == (1, 3)
+    assert tokens.slice_by_text(8, 14).text == bistr("brown fox")
+    assert tokens.slice_by_original(9, 15).text == bistr("brown fox")
+    assert tokens.snap_text_bounds(8, 14) == (6, 15)
+    assert tokens.snap_original_bounds(9, 15) == (7, 16)
 
 
 def test_regex_tokenizer():
