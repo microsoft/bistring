@@ -12,7 +12,7 @@ setup(
     author='Microsoft Research Montreal',
     author_email='msrmtle@microsoft.com',
     description='Bidirectionally transformed strings',
-    url='https://dev.azure.com/maluuba/Isentrope',
+    url='https://github.com/microsoft/bistring',
     packages=[
         'bistring',
     ],
