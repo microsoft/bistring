@@ -49,6 +49,82 @@ def test_concat():
     assert bs.modified == ' '
 
 
+def test_find_index():
+    bs = bistr('dysfunction')
+
+    assert bs.find('dis') == -1
+    assert bs.find('fun') == 3
+    assert bs.find_bounds('dis') == (-1, -1)
+    assert bs.find_bounds('fun') == (3, 6)
+
+    pytest.raises(ValueError, bs.index, 'dis')
+    pytest.raises(ValueError, bs.index_bounds, 'dis')
+
+    assert bs.index('fun') == 3
+    assert bs.index_bounds('fun') == (3, 6)
+
+
+def test_starts_ends_with():
+    bs = bistr('Beginning, middle, ending')
+
+    assert bs.startswith('Begin')
+    assert bs.endswith('ing')
+
+    assert not bs.startswith('ending')
+    assert not bs.endswith('Beginning')
+
+    assert bs.startswith(('Begin', 'End'))
+    assert bs.endswith(('beginning', 'ending'))
+
+
+def test_justify():
+    bs = bistr('Hello world!')
+
+    assert bs.center(5) == bs
+    assert bs.center(20) == bistr('', '    ') + bs + bistr('', '    ')
+    assert bs.center(21) == bistr('', '    ') + bs + bistr('', '     ')
+
+    assert bs.ljust(5) == bs
+    assert bs.ljust(16) == bs + bistr('', '    ')
+
+    assert bs.rjust(5) == bs
+    assert bs.rjust(16) == bistr('', '    ') + bs
+
+
+def test_split():
+    bs = bistr('1,2,3')
+    assert bs.split(',') == [bistr('1'), bistr('2'), bistr('3')]
+    assert bs.split(',', 1) == [bistr('1'), bistr('2,3')]
+
+    assert bistr('1,2,,3,').split(',') == [bistr('1'), bistr('2'), bistr(''), bistr('3'), bistr('')]
+
+    assert bistr('').split(',') == [bistr('')]
+
+    assert bistr('1<>2<>3').split('<>') == [bistr('1'), bistr('2'), bistr('3')]
+
+    bs = bistr('   1   2   3   ')
+    assert bs.split() == [bistr('1'), bistr('2'), bistr('3')]
+    assert bs.split(maxsplit=-1) == [bistr('1'), bistr('2'), bistr('3')]
+    assert bs.split(maxsplit=2) == [bistr('1'), bistr('2'), bistr('3   ')]
+    assert bs.split(maxsplit=1) == [bistr('1'), bistr('2   3   ')]
+
+    assert bistr('').split() == []
+
+
+def test_expandtabs():
+    bs = bistr(' \tHello\t\tworld!\n\tGoodbye \tworld!')
+    bs = bs.expandtabs()
+
+    assert bs.modified == bs.original.expandtabs()
+    assert bs[0:1] == bistr(' ')
+    assert bs[1:8] == bistr('\t', '       ')
+    assert bs[8:13] == bistr('Hello')
+    assert bs[13:16] == bistr('\t', '   ')
+    assert bs[16:24] == bistr('\t', '        ')
+    assert bs[24:30] == bistr('world!')
+    assert bs[30:31] == bistr('\n')
+
+
 def test_strip():
     bs = bistr('  Hello  world!  ')
     assert bs.original == '  Hello  world!  '
@@ -107,6 +183,23 @@ def test_title():
     bs = bistr('istanbul').title('tr_TR')
     assert bs.original == 'istanbul'
     assert bs.modified == 'İstanbul'
+
+
+def test_capitalize():
+    bs = bistr('hello WORLD').capitalize('en_US')
+    assert bs.original == 'hello WORLD'
+    assert bs.modified == 'Hello world'
+    assert bs.alignment == Alignment.identity(11)
+
+    bs = bistr('τελικός').capitalize('el_GR')
+    assert bs.original == 'τελικός'
+    assert bs.modified == 'Τελικός'
+    assert bs.alignment == Alignment.identity(7)
+
+    bs = bistr('ἴΣ').capitalize('el_GR')
+    assert bs.original == 'ἴΣ'
+    assert bs.modified == 'Ἴς'
+    assert bs.alignment == Alignment.identity(2)
 
 
 def test_normalize():

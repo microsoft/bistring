@@ -5,10 +5,11 @@ from __future__ import annotations
 
 __all__ = ['bistr']
 
-from typing import Iterable, Optional, Tuple
+from itertools import islice
+from typing import Iterable, List, Optional, Tuple, Union
 
 from ._alignment import Alignment
-from ._typing import Regex, String
+from ._typing import Bounds, Regex, String
 
 
 class bistr:
@@ -65,9 +66,9 @@ class bistr:
             return f'({self.original!r} ⇋ {self.modified!r})'
 
     def __repr__(self):
-        if self.original == self.modified and self.alignment == Alignment.identity(len(self.original)):
+        if self.original == self.modified and len(self.alignment) == len(self.original) + 1:
             return f'bistr({self.original!r})'
-        elif self.alignment == Alignment([(0, 0), (len(self.original), len(self.modified))]):
+        elif len(self.alignment) == 2:
             return f'bistr({self.original!r}, {self.modified!r})'
         else:
             return f'bistr({self.original!r}, {self.modified!r}, {self.alignment!r})'
@@ -144,6 +145,135 @@ class bistr:
             yield bistr(self.original[i:j], self.modified[k:l])
             i, k = j, l
 
+    def count(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> int:
+        return self.modified.count(sub, start, end)
+
+    def find(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> int:
+        return self.modified.find(sub, start, end)
+
+    def find_bounds(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> Bounds:
+        i = self.find(sub, start, end)
+        if i >= 0:
+            return i, i + len(sub)
+        else:
+            return i, i
+
+    def rfind(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> int:
+        return self.modified.rfind(sub, start, end)
+
+    def rfind_bounds(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> Bounds:
+        i = self.rfind(sub, start, end)
+        if i >= 0:
+            return i, i + len(sub)
+        else:
+            return i, i
+
+    def index(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> int:
+        return self.modified.index(sub, start, end)
+
+    def index_bounds(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> Bounds:
+        i = self.index(sub, start, end)
+        return i, i + len(sub)
+
+    def rindex(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> int:
+        return self.modified.rindex(sub, start, end)
+
+    def rindex_bounds(self, sub: str, start: Optional[int] = None, end: Optional[int] = None) -> Bounds:
+        i = self.rindex(sub, start, end)
+        return i, i + len(sub)
+
+    def startswith(self, prefix: Union[str, Tuple[str, ...]], start: Optional[int] = None, end: Optional[int] = None) -> bool:
+        return self.modified.startswith(prefix, start, end)
+
+    def endswith(self, suffix: Union[str, Tuple[str, ...]], start: Optional[int] = None, end: Optional[int] = None) -> bool:
+        return self.modified.endswith(suffix, start, end)
+
+    @classmethod
+    def join(cls, iterable: Iterable[String]) -> bistr:
+        result = cls('')
+        for element in iterable:
+            result += cls(element)
+        return result
+
+    def _find_whitespace(self, start: int) -> Bounds:
+        for i in range(start, len(self)):
+            if self[i].isspace():
+                first = i
+                break
+        else:
+            return -1, -1
+
+        for i in range(first + 1, len(self)):
+            if not self[i].isspace():
+                last = i
+                break
+        else:
+            last = len(self)
+
+        return first, last
+
+    def split(self, sep: Optional[str] = None, maxsplit: int = -1) -> List[bistr]:
+        result = []
+        count = 0
+        start = 0
+
+        while start >= 0 and (count < maxsplit or maxsplit == -1):
+            if sep is None:
+                i, j = self._find_whitespace(start)
+            else:
+                i, j = self.find_bounds(sep, start)
+
+            if i < 0:
+                i = len(self)
+
+            if i > start or sep is not None:
+                result.append(self[start:i])
+                count += 1
+
+            start = j
+
+        if start >= 0:
+            result.append(self[start:])
+
+        return result
+
+    def partition(self, sep: str) -> Tuple[bistr, bistr, bistr]:
+        i, j = self.find_bounds(sep)
+        if i >= 0:
+            return self[:i], self[i:j], self[j:]
+        else:
+            return self, bistr(), bistr()
+
+    def rpartition(self, sep: str) -> Tuple[bistr, bistr, bistr]:
+        i, j = self.rfind_bounds(sep)
+        if i >= 0:
+            return self[:i], self[i:j], self[j:]
+        else:
+            return self, bistr(), bistr()
+
+    def center(self, width: int, fillchar: str = ' ') -> bistr:
+        if len(self) >= width:
+            return self
+
+        pad = width - len(self)
+        lpad = pad // 2
+        rpad = (pad + 1) // 2
+        return bistr('', fillchar * lpad) + self + bistr('', fillchar * rpad)
+
+    def ljust(self, width: int, fillchar: str = ' ') -> bistr:
+        if len(self) >= width:
+            return self
+
+        pad = width - len(self)
+        return self + bistr('', fillchar * pad)
+
+    def rjust(self, width: int, fillchar: str = ' ') -> bistr:
+        if len(self) >= width:
+            return self
+
+        pad = width - len(self)
+        return bistr('', fillchar * pad) + self
+
     def _builder(self):
         from ._builder import BistrBuilder
         return BistrBuilder(self)
@@ -164,8 +294,40 @@ class bistr:
         from ._icu import title
         return title(self, locale)
 
-    def expandtabs(self, tabsize=8) -> bistr:
-        return self.replace('\t', ' ' * tabsize)
+    def capitalize(self, locale: Optional[str] = None) -> bistr:
+        # We have to be careful here to get context-sensitive letters like
+        # word-final sigma correct
+
+        builder = self._builder()
+
+        title = bistr(self.modified).title()
+        for chunk in islice(title.chunks(), 1):
+            builder.replace(len(chunk.original), chunk.modified)
+
+        lower = bistr(self.modified).lower()
+        for chunk in islice(lower.chunks(), 1, None):
+            builder.replace(len(chunk.original), chunk.modified)
+
+        return builder.build()
+
+    def expandtabs(self, tabsize: int = 8) -> bistr:
+        builder = self._builder()
+
+        col = 0
+        while not builder.is_complete:
+            c = builder.peek(1)
+            if c == '\t':
+                spaces = tabsize - (col % tabsize)
+                builder.replace(1, ' ' * spaces)
+                col += spaces
+            else:
+                builder.skip(1)
+                if c == '\n' or c == '\r':
+                    col = 0
+                else:
+                    col += 1
+
+        return builder.build()
 
     def replace(self, old: str, new: str, count: Optional[int] = None) -> bistr:
         builder = self._builder()
@@ -241,6 +403,6 @@ class bistr:
         builder.discard_rest()
         return builder.build()
 
-    def normalize(self, form: str):
+    def normalize(self, form: str) -> bistr:
         from ._icu import normalize
         return normalize(self, form)
