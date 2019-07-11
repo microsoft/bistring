@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 __all__ = [
-    "Token",
-    "Tokenization",
-    "RegexTokenizer",
-    "SplittingTokenizer",
-    "CharacterTokenizer",
-    "WordTokenizer",
-    "SentenceTokenizer",
+    'Token',
+    'Tokenization',
+    'RegexTokenizer',
+    'SplittingTokenizer',
+    'CharacterTokenizer',
+    'WordTokenizer',
+    'SentenceTokenizer',
 ]
 
 from dataclasses import dataclass
@@ -56,10 +56,10 @@ class Token:
         return cls(text[start:end], start, end)
 
     def __str__(self):
-        return f"[{self.start}:{self.end}]={self.text}"
+        return f'[{self.start}:{self.end}]={self.text}'
 
     def __repr__(self):
-        return f"Token({self.text!r}, start={self.start}, end={self.end})"
+        return f'Token({self.text!r}, start={self.start}, end={self.end})'
 
 
 @dataclass(frozen=True)
@@ -83,9 +83,9 @@ class Tokenization:
             alignment.append((token.start, i))
             alignment.append((token.end, i + 1))
 
-        super().__setattr__("text", text)
-        super().__setattr__("_tokens", tokens)
-        super().__setattr__("alignment", Alignment(alignment))
+        super().__setattr__('text', text)
+        super().__setattr__('_tokens', tokens)
+        super().__setattr__('alignment', Alignment(alignment))
 
     def __iter__(self):
         return iter(self._tokens)
@@ -97,7 +97,7 @@ class Tokenization:
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
-                raise ValueError("Non-unit strides not supported")
+                raise ValueError('Non-unit strides not supported')
 
             text = self.substring(start, stop)
             tokens = self._tokens[index]
@@ -109,11 +109,11 @@ class Tokenization:
             return self._tokens[index]
 
     def __str__(self):
-        tokens = ", ".join(map(str, self))
-        return f"Tokenization({self.text}, [{tokens}])"
+        tokens = ', '.join(map(str, self))
+        return f'Tokenization({self.text}, [{tokens}])'
 
     def __repr__(self):
-        return f"Tokenization({self.text!r}, {self._tokens!r})"
+        return f'Tokenization({self.text!r}, {self._tokens!r})'
 
     def substring(self, *args) -> Bounds:
         """
@@ -233,7 +233,7 @@ class _IcuTokenizer:
         self._break_iterator()
 
     def _break_iterator(self) -> icu.BreakIterator:
-        if not hasattr(self._local, "bi"):
+        if not hasattr(self._local, 'bi'):
             self._local.bi = self._constructor(self._locale)
         return self._local.bi
 

@@ -7,29 +7,29 @@ from setuptools import setup
 
 
 setup(
-    name="bistring",
-    version="0.0",
-    author="Microsoft Research Montreal",
-    author_email="msrmtle@microsoft.com",
-    description="Bidirectionally transformed strings",
-    url="https://dev.azure.com/maluuba/Isentrope",
+    name='bistring',
+    version='0.0',
+    author='Microsoft Research Montreal',
+    author_email='msrmtle@microsoft.com',
+    description='Bidirectionally transformed strings',
+    url='https://dev.azure.com/maluuba/Isentrope',
     packages=[
-        "bistring",
+        'bistring',
     ],
-    test_suite="tests",
+    test_suite='tests',
     setup_requires=[
-        "pytest-runner",
+        'pytest-runner',
     ],
     install_requires=[
-        "pyicu",
+        'pyicu',
     ],
     extras_require={
-        "test": [
-            "pytest",
-            "regex",
+        'test': [
+            'pytest',
+            'regex',
         ],
     },
     tests_require=[
-        "bistring[test]",
+        'bistring[test]',
     ],
 )

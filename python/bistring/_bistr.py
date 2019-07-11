@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-__all__ = ["bistr"]
+__all__ = ['bistr']
 
 from typing import Iterable, Optional, Tuple
 
@@ -16,7 +16,7 @@ class bistr:
     A bidirectionally transformed string.
     """
 
-    __slots__ = ("original", "modified", "alignment")
+    __slots__ = ('original', 'modified', 'alignment')
 
     original: str
     modified: str
@@ -29,7 +29,7 @@ class bistr:
 
         if isinstance(original, bistr):
             if modified is not None or alignment is not None:
-                raise ValueError("bistr copy constructor invoked with extra arguments")
+                raise ValueError('bistr copy constructor invoked with extra arguments')
             return original
 
         if alignment is None:
@@ -42,29 +42,29 @@ class bistr:
             modified = original
 
         if alignment.original_bounds() != (0, len(original)):
-            raise ValueError("Alignment incompatible with original string")
+            raise ValueError('Alignment incompatible with original string')
         elif alignment.modified_bounds() != (0, len(modified)):
-            raise ValueError("Alignment incompatible with modified string")
+            raise ValueError('Alignment incompatible with modified string')
 
         result = super().__new__(cls)
-        super().__setattr__(result, "original", original)
-        super().__setattr__(result, "modified", modified)
-        super().__setattr__(result, "alignment", alignment)
+        super().__setattr__(result, 'original', original)
+        super().__setattr__(result, 'modified', modified)
+        super().__setattr__(result, 'alignment', alignment)
         return result
 
     def __str__(self):
         if self.original == self.modified:
-            return f"⮎{self.original!r}⮌"
+            return f'⮎{self.original!r}⮌'
         else:
-            return f"({self.original!r} ⇋ {self.modified!r})"
+            return f'({self.original!r} ⇋ {self.modified!r})'
 
     def __repr__(self):
         if self.original == self.modified and self.alignment == Alignment.identity(len(self.original)):
-            return f"bistr({self.original!r})"
+            return f'bistr({self.original!r})'
         elif self.alignment == Alignment([(0, 0), (len(self.original), len(self.modified))]):
-            return f"bistr({self.original!r}, {self.modified!r})"
+            return f'bistr({self.original!r}, {self.modified!r})'
         else:
-            return f"bistr({self.original!r}, {self.modified!r}, {self.alignment!r})"
+            return f'bistr({self.original!r}, {self.modified!r}, {self.alignment!r})'
 
     def __len__(self):
         return len(self.modified)
@@ -105,7 +105,7 @@ class bistr:
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
-                raise ValueError("Non-unit strides not supported")
+                raise ValueError('Non-unit strides not supported')
 
             modified = self.modified[start:stop]
             original = self.original[self.alignment.original_slice(start, stop)]
@@ -117,10 +117,10 @@ class bistr:
             return self.modified[index]
 
     def __setattr__(self, name, value):
-        raise AttributeError("bistr is immutable")
+        raise AttributeError('bistr is immutable')
 
     def __delattr__(self, name):
-        raise AttributeError("bistr is immutable")
+        raise AttributeError('bistr is immutable')
 
     def inverse(self) -> bistr:
         """
@@ -159,7 +159,7 @@ class bistr:
         return title(self, locale)
 
     def expandtabs(self, tabsize=8) -> bistr:
-        return self.replace("\t", " " * tabsize)
+        return self.replace('\t', ' ' * tabsize)
 
     def replace(self, old: str, new: str, count: Optional[int] = None) -> bistr:
         builder = self._builder()

@@ -12,4 +12,4 @@ Regex = Union[str, Pattern]
 
 Replacement = Union[str, Callable[[Match], str]]
 
-String = Union[str, "bistr"]
+String = Union[str, 'bistr']

@@ -73,10 +73,10 @@ def _normalize(bs: bistr, normalizer: icu.Normalizer2) -> bistr:
 
 
 _NORMALIZERS = {
-    "NFC": icu.Normalizer2.getNFCInstance,
-    "NFKC": icu.Normalizer2.getNFKCInstance,
-    "NFD": icu.Normalizer2.getNFDInstance,
-    "NFKD": icu.Normalizer2.getNFKDInstance,
+    'NFC': icu.Normalizer2.getNFCInstance,
+    'NFKC': icu.Normalizer2.getNFKCInstance,
+    'NFD': icu.Normalizer2.getNFDInstance,
+    'NFKD': icu.Normalizer2.getNFKDInstance,
 }
 
 def normalize(bs: bistr, form: str) -> bistr:
@@ -84,4 +84,4 @@ def normalize(bs: bistr, form: str) -> bistr:
     if factory:
         return _normalize(bs, factory())
     else:
-        raise ValueError("invalid normalization form")
+        raise ValueError('invalid normalization form')

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-__all__ = ["BistrBuilder"]
+__all__ = ['BistrBuilder']
 
 from typing import Iterable, List, Match, Optional, Pattern, Tuple
 
@@ -48,7 +48,7 @@ class BistrBuilder:
         """
         The modified string as built so far.
         """
-        return "".join(self._modified)
+        return ''.join(self._modified)
 
     @property
     def alignment(self) -> Alignment:
@@ -115,7 +115,7 @@ class BistrBuilder:
         """
         Discard a portion of the original string.
         """
-        self.replace(n, "")
+        self.replace(n, '')
 
     def discard_rest(self):
         """

@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-__all__ = ["Alignment"]
+__all__ = ['Alignment']
 
 import bisect
 from typing import Iterable, List, Optional, Tuple, cast, overload
@@ -16,7 +16,7 @@ class Alignment:
     An alignment between two related sequences.
     """
 
-    __slots__ = ("_original", "_modified")
+    __slots__ = ('_original', '_modified')
 
     _original: List[int]
     _modified: List[int]
@@ -27,9 +27,9 @@ class Alignment:
         for i, j in values:
             if self._original:
                 if i < self._original[-1]:
-                    raise ValueError("Original sequence position moved backwards")
+                    raise ValueError('Original sequence position moved backwards')
                 elif j < self._modified[-1]:
-                    raise ValueError("Modified sequence position moved backwards")
+                    raise ValueError('Modified sequence position moved backwards')
                 elif i == self._original[-1] and j == self._modified[-1]:
                     continue
 
@@ -37,7 +37,7 @@ class Alignment:
             self._modified.append(j)
 
         if not self._original:
-            raise ValueError("No sequence positions to align")
+            raise ValueError('No sequence positions to align')
 
     @classmethod
     def _create(cls, original: List[int], modified: List[int]) -> Alignment:
@@ -50,16 +50,16 @@ class Alignment:
         i, j = self._original[0], self._original[-1]
         k, l = self._modified[0], self._modified[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(k, l + 1)):
-            return f"[{i}:{j}⇋{k}:{l}]"
+            return f'[{i}:{j}⇋{k}:{l}]'
         else:
-            return "[" + ", ".join(f"{i}⇋{j}" for i, j in self) + "]"
+            return '[' + ', '.join(f'{i}⇋{j}' for i, j in self) + ']'
 
     def __repr__(self):
         i, j = self._original[0], self._original[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(i, j + 1)):
-            return f"Alignment.identity({self._original[0]}, {self._original[-1]})"
+            return f'Alignment.identity({self._original[0]}, {self._original[-1]})'
         else:
-            return "Alignment([" + ", ".join(map(repr, self)) + "])"
+            return 'Alignment([' + ', '.join(map(repr, self)) + '])'
 
     def __eq__(self, other):
         if isinstance(other, Alignment):
@@ -78,7 +78,7 @@ class Alignment:
                 return arg.start, arg.stop
             elif isinstance(arg, slice):
                 if arg.start is None or arg.stop is None:
-                    raise ValueError("slice with unspecified bounds")
+                    raise ValueError('slice with unspecified bounds')
                 return arg.start, arg.stop
             elif isinstance(arg, tuple):
                 return cast(Bounds, arg)
@@ -87,7 +87,7 @@ class Alignment:
         elif l == 2:
             return cast(Bounds, args)
         else:
-            raise TypeError("Too many arguments")
+            raise TypeError('Too many arguments')
 
     @overload
     @classmethod
@@ -120,7 +120,7 @@ class Alignment:
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
-                raise ValueError("Non-unit strides not supported")
+                raise ValueError('Non-unit strides not supported')
             return self._create(self._original[index], self._modified[index])
         else:
             return (self._original[index], self._modified[index])
@@ -134,12 +134,12 @@ class Alignment:
     def _search(self, source: List[int], start: int, stop: int) -> Bounds:
         first = bisect.bisect_right(source, start)
         if first == 0:
-            raise IndexError("range start too small")
+            raise IndexError('range start too small')
         first -= 1
 
         last = bisect.bisect_left(source, stop, first)
         if last == len(source):
-            raise IndexError("range end too big")
+            raise IndexError('range end too big')
 
         return first, last
 
@@ -197,9 +197,9 @@ class Alignment:
         o_mod = other._modified
 
         if o_orig[0] < self._original[-1]:
-            raise ValueError("Original sequence position moved backwards")
+            raise ValueError('Original sequence position moved backwards')
         elif o_mod[0] < self._modified[-1]:
-            raise ValueError("Modified sequence position moved backwards")
+            raise ValueError('Modified sequence position moved backwards')
         elif o_orig[0] == self._original[-1] and o_mod[0] == self._modified[-1]:
             o_orig = o_orig[1:]
             o_mod = o_mod[1:]
@@ -213,7 +213,7 @@ class Alignment:
         """
 
         if self.modified_bounds() != other.original_bounds():
-            raise ValueError("Incompatible alignments")
+            raise ValueError('Incompatible alignments')
 
         original = []
         modified = []

@@ -5,8 +5,8 @@ from bistring import bistr, Token, Tokenization
 
 
 def test_tokenization():
-    text = bistr("The quick, brown fox jumps over the lazy dog")
-    text = text.replace(",", "")
+    text = bistr('The quick, brown fox jumps over the lazy dog')
+    text = text.replace(',', '')
 
     tokens = Tokenization(text, [
         Token.slice(text, 0, 3),
@@ -21,14 +21,14 @@ def test_tokenization():
     ])
 
     tokens = tokens[1:-1]
-    assert tokens.text.original == "quick, brown fox jumps over the lazy"
-    assert tokens.text.modified == "quick brown fox jumps over the lazy"
+    assert tokens.text.original == 'quick, brown fox jumps over the lazy'
+    assert tokens.text.modified == 'quick brown fox jumps over the lazy'
     assert tokens.text_bounds(1, 3) == (6, 15)
     assert tokens.original_bounds(1, 3) == (7, 16)
     assert tokens.bounds_for_text(8, 14) == (1, 3)
     assert tokens.bounds_for_original(9, 15) == (1, 3)
-    assert tokens.slice_by_text(8, 14).text == bistr("brown fox")
-    assert tokens.slice_by_original(9, 15).text == bistr("brown fox")
+    assert tokens.slice_by_text(8, 14).text == bistr('brown fox')
+    assert tokens.slice_by_original(9, 15).text == bistr('brown fox')
     assert tokens.snap_text_bounds(8, 14) == (6, 15)
     assert tokens.snap_original_bounds(9, 15) == (7, 16)
 
@@ -36,11 +36,11 @@ def test_tokenization():
 def test_regex_tokenizer():
     from bistring import RegexTokenizer
 
-    text = bistr(" 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ")
-    text = text.normalize("NFKD")
+    text = bistr(' 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ')
+    text = text.normalize('NFKD')
     text = text.casefold()
 
-    tokenizer = RegexTokenizer(r"\w+")
+    tokenizer = RegexTokenizer(r'\w+')
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -55,11 +55,11 @@ def test_regex_tokenizer():
 def test_splitting_tokenizer():
     from bistring import SplittingTokenizer
 
-    text = bistr(" 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ")
-    text = text.normalize("NFKD")
+    text = bistr(' 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ')
+    text = text.normalize('NFKD')
     text = text.casefold()
 
-    tokenizer = SplittingTokenizer(r"\s+")
+    tokenizer = SplittingTokenizer(r'\s+')
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -74,9 +74,9 @@ def test_splitting_tokenizer():
 def test_character_tokenizer():
     from bistring import CharacterTokenizer
 
-    text = bistr(" 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ")
+    text = bistr(' 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ')
 
-    tokenizer = CharacterTokenizer("en_US")
+    tokenizer = CharacterTokenizer('en_US')
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -86,9 +86,9 @@ def test_character_tokenizer():
 def test_word_tokenizer():
     from bistring import WordTokenizer
 
-    text = bistr(" 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ")
+    text = bistr(' 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 𝖋𝖔𝖝 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 𝖉𝖔𝖌 ')
 
-    tokenizer = WordTokenizer("en_US")
+    tokenizer = WordTokenizer('en_US')
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
@@ -103,9 +103,9 @@ def test_word_tokenizer():
 def test_sentence_tokenizer():
     from bistring import SentenceTokenizer
 
-    text = bistr("The following sentence is true.  The preceeding sentence, surprisingly, is false.")
+    text = bistr('The following sentence is true.  The preceeding sentence, surprisingly, is false.')
 
-    tokenizer = SentenceTokenizer("en_US")
+    tokenizer = SentenceTokenizer('en_US')
 
     tokens = tokenizer.tokenize(text)
     assert tokens.text == text
