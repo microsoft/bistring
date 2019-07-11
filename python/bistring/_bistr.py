@@ -31,15 +31,21 @@ class bistr:
             if modified is not None or alignment is not None:
                 raise ValueError('bistr copy constructor invoked with extra arguments')
             return original
-
-        if alignment is None:
-            if modified is None:
-                alignment = Alignment.identity(len(original))
-            else:
-                alignment = Alignment([(0, 0), (len(original), len(modified))])
+        elif not isinstance(original, str):
+            raise TypeError(f'Expected a string, found {type(original)}')
 
         if modified is None:
             modified = original
+            if alignment is None:
+                alignment = Alignment.identity(len(original))
+        elif isinstance(modified, str):
+            if alignment is None:
+                alignment = Alignment([(0, 0), (len(original), len(modified))])
+        else:
+            raise TypeError(f'Expected a string, found {type(modified)}')
+
+        if not isinstance(alignment, Alignment):
+            raise TypeError(f'Expected an Alignment, found {type(alignment)}')
 
         if alignment.original_bounds() != (0, len(original)):
             raise ValueError('Alignment incompatible with original string')

@@ -1,9 +1,33 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+from bistring import Alignment, bistr
+import pytest
 import unicodedata
 
-from bistring import Alignment, bistr
+
+def test_new():
+    pytest.raises(TypeError, bistr, 42)
+    pytest.raises(TypeError, bistr, 'fourty-two', 42)
+    pytest.raises(TypeError, bistr, 'fourty-two', '42', 42)
+
+    pytest.raises(ValueError, bistr, 'fourty-two', '42', Alignment([
+        (0, 0),
+        (9, 2),
+    ]))
+    pytest.raises(ValueError, bistr, 'fourty-two', '42', Alignment([
+        (0, 0),
+        (10, 1),
+    ]))
+
+    bistr('42')
+    bistr('fourty-two', '42')
+    bistr('fourty-two', '42', Alignment([
+        (0, 0),
+        (6, 1),
+        (7, 1),
+        (10, 2),
+    ]))
 
 
 def test_concat():
