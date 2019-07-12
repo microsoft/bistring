@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name='bistring',
-    version='0.0',
+    version='0.1',
     author='Microsoft Research Montreal',
     author_email='msrmtle@microsoft.com',
     description='Bidirectionally transformed strings',
