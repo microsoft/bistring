@@ -141,15 +141,15 @@ class BistrBuilder:
         for x, y in zip(bs.alignment, bs.alignment[1:]):
             self._advance(y[0] - x[0], y[1] - x[1])
 
-    def _match(self, regex: Regex) -> Optional[Match]:
+    def _match(self, regex: Regex) -> Optional[Match[str]]:
         pattern = compile_regex(regex)
         return pattern.match(self.current, pos=self._opos)
 
-    def _search(self, regex: Regex) -> Optional[Match]:
+    def _search(self, regex: Regex) -> Optional[Match[str]]:
         pattern = compile_regex(regex)
         return pattern.search(self.current, pos=self._opos)
 
-    def _finditer(self, regex: Regex) -> Iterable[Match]:
+    def _finditer(self, regex: Regex) -> Iterable[Match[str]]:
         pattern = compile_regex(regex)
         return pattern.finditer(self.current, pos=self._opos)
 

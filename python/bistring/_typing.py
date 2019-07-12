@@ -8,8 +8,8 @@ Bounds = Tuple[int, int]
 
 Range = Union[range, slice, Bounds]
 
-Regex = Union[str, Pattern]
+Regex = Union[str, Pattern[str]]
 
-Replacement = Union[str, Callable[[Match], str]]
+Replacement = Union[str, Callable[[Match[str]], str]]
 
 String = Union[str, 'bistr']
