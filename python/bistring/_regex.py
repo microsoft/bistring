@@ -7,14 +7,14 @@ from typing import Match, Pattern
 from ._typing import Regex, Replacement
 
 
-def compile_regex(regex: Regex) -> Pattern:
+def compile_regex(regex: Regex) -> Pattern[str]:
     if isinstance(regex, str):
         return re.compile(regex)
     else:
         return regex
 
 
-def expand_template(match: Match, repl: Replacement) -> str:
+def expand_template(match: Match[str], repl: Replacement) -> str:
     if callable(repl):
         return repl(match)
     else:

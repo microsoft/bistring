@@ -1,0 +1,4 @@
+Alignment
+=========
+
+.. autoclass:: bistring.Alignment

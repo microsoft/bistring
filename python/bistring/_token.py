@@ -1,20 +1,24 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+from __future__ import annotations
+
 __all__ = [
-    "Token",
-    "Tokenization",
-    "RegexTokenizer",
-    "SplittingTokenizer",
-    "CharacterTokenizer",
-    "WordTokenizer",
-    "SentenceTokenizer",
+    'Token',
+    'Tokenization',
+    'Tokenizer',
+    'RegexTokenizer',
+    'SplittingTokenizer',
+    'CharacterTokenizer',
+    'WordTokenizer',
+    'SentenceTokenizer',
 ]
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import icu
 import threading
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Sequence
 
 from ._alignment import Alignment
 from ._bistr import bistr
@@ -29,8 +33,19 @@ class Token:
     """
 
     text: bistr
+    """
+    The actual text of the token.
+    """
+
     start: int
+    """
+    The start position of the token.
+    """
+
     end: int
+    """
+    The end position of the token.
+    """
 
     @property
     def original(self) -> str:
@@ -47,17 +62,17 @@ class Token:
         return self.text.modified
 
     @classmethod
-    def slice(cls, text: bistr, start: int, end: int) -> "Token":
+    def slice(cls, text: bistr, start: int, end: int) -> Token:
         """
         Create a Token from a slice of a bistr.
         """
         return cls(text[start:end], start, end)
 
     def __str__(self):
-        return f"[{self.start}:{self.end}]={self.text}"
+        return f'[{self.start}:{self.end}]={self.text}'
 
     def __repr__(self):
-        return f"Token({self.text!r}, start={self.start}, end={self.end})"
+        return f'Token({self.text!r}, start={self.start}, end={self.end})'
 
 
 @dataclass(frozen=True)
@@ -67,8 +82,16 @@ class Tokenization:
     """
 
     text: bistr
-    _tokens: Iterable[Token]
+    """
+    The text that was tokenized.
+    """
+
     alignment: Alignment
+    """
+    The alignment from text indices to token indices.
+    """
+
+    _tokens: Sequence[Token]
 
     def __init__(self, text: bistr, tokens: Iterable[Token]):
         """
@@ -81,9 +104,9 @@ class Tokenization:
             alignment.append((token.start, i))
             alignment.append((token.end, i + 1))
 
-        super().__setattr__("text", text)
-        super().__setattr__("_tokens", tokens)
-        super().__setattr__("alignment", Alignment(alignment))
+        super().__setattr__('text', text)
+        super().__setattr__('_tokens', tokens)
+        super().__setattr__('alignment', Alignment(alignment))
 
     def __iter__(self):
         return iter(self._tokens)
@@ -95,7 +118,7 @@ class Tokenization:
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
-                raise ValueError("Non-unit strides not supported")
+                raise ValueError('Non-unit strides not supported')
 
             text = self.substring(start, stop)
             tokens = self._tokens[index]
@@ -107,11 +130,11 @@ class Tokenization:
             return self._tokens[index]
 
     def __str__(self):
-        tokens = ", ".join(map(str, self))
-        return f"Tokenization({self.text}, [{tokens}])"
+        tokens = ', '.join(map(str, self))
+        return f'Tokenization({self.text}, [{tokens}])'
 
     def __repr__(self):
-        return f"Tokenization({self.text!r}, {self._tokens!r})"
+        return f'Tokenization({self.text!r}, {self._tokens!r})'
 
     def substring(self, *args) -> Bounds:
         """
@@ -145,14 +168,14 @@ class Tokenization:
         text_bounds = self.text.alignment.modified_bounds(*args)
         return self.alignment.modified_bounds(text_bounds)
 
-    def slice_by_text(self, *args) -> "Tokenization":
+    def slice_by_text(self, *args) -> Tokenization:
         """
         Map a span of text to the corresponding span of tokens.
         """
         i, j = self.bounds_for_text(*args)
         return self[i:j]
 
-    def slice_by_original(self, *args) -> "Tokenization":
+    def slice_by_original(self, *args) -> Tokenization:
         """
         Map a span of the original text to the corresponding span of tokens.
         """
@@ -172,7 +195,28 @@ class Tokenization:
         return self.original_bounds(self.bounds_for_original(*args))
 
 
-class RegexTokenizer:
+class Tokenizer(ABC):
+    """
+    Abstract base class for tokenizers.
+    """
+
+    @abstractmethod
+    def tokenize(self, text: String) -> Tokenization:
+        """
+        Tokenize some text.
+
+        :param text: The text to tokenize, as either an `str` or
+                     :class:`~bistring.bistr`.  A plain `str` should be
+                     converted to a `bistr` before processing.
+
+        :returns: A :class:`~bistring.Tokenization` holding the text and its
+                  tokens.
+        """
+
+        pass
+
+
+class RegexTokenizer(Tokenizer):
     """
     Breaks text into tokens based on a regex.
     """
@@ -188,7 +232,7 @@ class RegexTokenizer:
         return Tokenization(text, tokens)
 
 
-class SplittingTokenizer:
+class SplittingTokenizer(Tokenizer):
     """
     Splits text into tokens based on a regex.
     """
@@ -214,7 +258,7 @@ class SplittingTokenizer:
         return Tokenization(text, tokens)
 
 
-class _IcuTokenizer:
+class _IcuTokenizer(Tokenizer):
     """
     Base class for ICU BreakIterator-based tokenizers.
     """
@@ -231,7 +275,7 @@ class _IcuTokenizer:
         self._break_iterator()
 
     def _break_iterator(self) -> icu.BreakIterator:
-        if not hasattr(self._local, "bi"):
+        if not hasattr(self._local, 'bi'):
             self._local.bi = self._constructor(self._locale)
         return self._local.bi
 

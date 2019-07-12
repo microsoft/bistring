@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-__all__ = ["Alignment"]
+from __future__ import annotations
+
+__all__ = ['Alignment']
 
 import bisect
 from typing import Iterable, List, Optional, Tuple, cast, overload
@@ -14,7 +16,7 @@ class Alignment:
     An alignment between two related sequences.
     """
 
-    __slots__ = ("_original", "_modified")
+    __slots__ = ('_original', '_modified')
 
     _original: List[int]
     _modified: List[int]
@@ -25,9 +27,9 @@ class Alignment:
         for i, j in values:
             if self._original:
                 if i < self._original[-1]:
-                    raise ValueError("Original sequence position moved backwards")
+                    raise ValueError('Original sequence position moved backwards')
                 elif j < self._modified[-1]:
-                    raise ValueError("Modified sequence position moved backwards")
+                    raise ValueError('Modified sequence position moved backwards')
                 elif i == self._original[-1] and j == self._modified[-1]:
                     continue
 
@@ -35,10 +37,10 @@ class Alignment:
             self._modified.append(j)
 
         if not self._original:
-            raise ValueError("No sequence positions to align")
+            raise ValueError('No sequence positions to align')
 
     @classmethod
-    def _create(cls, original: List[int], modified: List[int]) -> "Alignment":
+    def _create(cls, original: List[int], modified: List[int]) -> Alignment:
         result = super().__new__(cls)
         result._original = original
         result._modified = modified
@@ -48,16 +50,19 @@ class Alignment:
         i, j = self._original[0], self._original[-1]
         k, l = self._modified[0], self._modified[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(k, l + 1)):
-            return f"[{i}:{j}⇋{k}:{l}]"
+            return f'[{i}:{j}⇋{k}:{l}]'
         else:
-            return "[" + ", ".join(f"{i}⇋{j}" for i, j in self) + "]"
+            return '[' + ', '.join(f'{i}⇋{j}' for i, j in self) + ']'
 
     def __repr__(self):
         i, j = self._original[0], self._original[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(i, j + 1)):
-            return f"Alignment.identity({self._original[0]}, {self._original[-1]})"
+            if i == 0:
+                return f'Alignment.identity({j})'
+            else:
+                return f'Alignment.identity({i}, {j})'
         else:
-            return "Alignment([" + ", ".join(map(repr, self)) + "])"
+            return 'Alignment([' + ', '.join(map(repr, self)) + '])'
 
     def __eq__(self, other):
         if isinstance(other, Alignment):
@@ -76,7 +81,7 @@ class Alignment:
                 return arg.start, arg.stop
             elif isinstance(arg, slice):
                 if arg.start is None or arg.stop is None:
-                    raise ValueError("slice with unspecified bounds")
+                    raise ValueError('slice with unspecified bounds')
                 return arg.start, arg.stop
             elif isinstance(arg, tuple):
                 return cast(Bounds, arg)
@@ -85,21 +90,21 @@ class Alignment:
         elif l == 2:
             return cast(Bounds, args)
         else:
-            raise TypeError("Too many arguments")
+            raise TypeError('Too many arguments')
 
     @overload
     @classmethod
-    def identity(cls, length: int) -> "Alignment":
+    def identity(cls, length: int) -> Alignment:
         ...
 
     @overload
     @classmethod
-    def identity(cls, start: int, stop: int) -> "Alignment":
+    def identity(cls, start: int, stop: int) -> Alignment:
         ...
 
     @overload
     @classmethod
-    def identity(cls, bounds: Range) -> "Alignment":
+    def identity(cls, bounds: Range) -> Alignment:
         ...
 
     @classmethod
@@ -118,12 +123,19 @@ class Alignment:
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
-                raise ValueError("Non-unit strides not supported")
+                raise ValueError('Non-unit strides not supported')
             return self._create(self._original[index], self._modified[index])
         else:
             return (self._original[index], self._modified[index])
 
-    def shift(self, delta_o, delta_m):
+    def shift(self, delta_o: int, delta_m: int):
+        """
+        Shift this alignment.
+
+        :param delta_o: The distance to shift the original sequence.
+        :param delta_m: The distance to shift the modified sequence.
+        """
+
         return self._create(
             [o + delta_o for o in self._original],
             [m + delta_m for m in self._modified],
@@ -132,12 +144,12 @@ class Alignment:
     def _search(self, source: List[int], start: int, stop: int) -> Bounds:
         first = bisect.bisect_right(source, start)
         if first == 0:
-            raise IndexError("range start too small")
+            raise IndexError('range start too small')
         first -= 1
 
         last = bisect.bisect_left(source, stop, first)
         if last == len(source):
-            raise IndexError("range end too big")
+            raise IndexError('range end too big')
 
         return first, last
 
@@ -167,7 +179,7 @@ class Alignment:
     def modified_slice(self, *args) -> slice:
         return slice(*self.modified_bounds(*args))
 
-    def slice_by_original(self, *args) -> "Alignment":
+    def slice_by_original(self, *args) -> Alignment:
         start, stop = self._parse_args(args)
         first, last = self._search(self._original, start, stop)
         original = self._original[first:last+1]
@@ -175,7 +187,7 @@ class Alignment:
         modified = self._modified[first:last+1]
         return self._create(original, modified)
 
-    def slice_by_modified(self, *args) -> "Alignment":
+    def slice_by_modified(self, *args) -> Alignment:
         start, stop = self._parse_args(args)
         first, last = self._search(self._modified, start, stop)
         original = self._original[first:last+1]
@@ -195,23 +207,23 @@ class Alignment:
         o_mod = other._modified
 
         if o_orig[0] < self._original[-1]:
-            raise ValueError("Original sequence position moved backwards")
+            raise ValueError('Original sequence position moved backwards')
         elif o_mod[0] < self._modified[-1]:
-            raise ValueError("Modified sequence position moved backwards")
+            raise ValueError('Modified sequence position moved backwards')
         elif o_orig[0] == self._original[-1] and o_mod[0] == self._modified[-1]:
             o_orig = o_orig[1:]
             o_mod = o_mod[1:]
 
         return self._create(self._original + o_orig, self._modified + o_mod)
 
-    def compose(self, other: "Alignment") -> "Alignment":
+    def compose(self, other: Alignment) -> Alignment:
         """
         Return a new alignment equivalent to applying this one first, then the
         other.
         """
 
         if self.modified_bounds() != other.original_bounds():
-            raise ValueError("Incompatible alignments")
+            raise ValueError('Incompatible alignments')
 
         original = []
         modified = []
@@ -243,7 +255,7 @@ class Alignment:
 
         return self._create(original, modified)
 
-    def inverse(self) -> "Alignment":
+    def inverse(self) -> Alignment:
         """
         The inverse of this alignment, from the modified to the original sequence.
         """

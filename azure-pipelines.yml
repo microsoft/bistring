@@ -24,9 +24,11 @@ steps:
     python -m pip install --upgrade pip
     CFLAGS="-std=c++11" pip install pyicu
     pip install -e './python[test]'
+    pip install -r ./docs/requirements.txt
   displayName: 'Install dependencies'
 
 - script: |
     pip install pytest-azurepipelines
     pytest
+    make -C docs doctest
   displayName: 'pytest'

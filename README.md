@@ -1,6 +1,10 @@
 bistring
 ========
 
+[![Build Status](https://dev.azure.com/maluuba/bistring/_apis/build/status/microsoft.bistring?branchName=master)](https://dev.azure.com/maluuba/bistring/_build/latest?definitionId=132&branchName=master)
+[![Documentation Status](https://readthedocs.org/projects/bistring/badge/?version=latest)](https://bistring.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/bistring.svg)](https://badge.fury.io/py/bistring)
+
 The bistring library provides non-destructive versions of common string processing operations like normalization, case folding, and find/replace.
 Each bistring remembers the original string, and how its substrings map to substrings of the modified version.
 
