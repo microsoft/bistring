@@ -108,6 +108,37 @@ class Tokenization:
         super().__setattr__('_tokens', tokens)
         super().__setattr__('alignment', Alignment(alignment))
 
+    @classmethod
+    def infer(cls, text: String, tokens: Iterable[str]) -> Tokenization:
+        r"""
+        Infer a `Tokenization` from a sequence of tokens.
+
+            >>> tokens = Tokenization.infer('hello, world!', ['hello', 'world'])
+            >>> tokens[0]
+            Token(bistr('hello'), start=0, end=5)
+            >>> tokens[1]
+            Token(bistr('world'), start=7, end=12)
+
+        Due to the possibility of ambiguity, it is much better to use a :class:`Tokenizer` or some other method of
+        producing :class:`Token`\ s with their positions explicitly set.
+
+        :returns:
+            The inferred tokenization, with token positions found by simple forward search.
+        :raises:
+            :class:`ValueError` if the tokens can't be found in the source string.
+        """
+
+        text = bistr(text)
+
+        result = []
+        start = 0
+        for token in tokens:
+            start, end = text.index_bounds(token, start)
+            result.append(Token.slice(text, start, end))
+            start = end
+
+        return cls(text, result)
+
     def __iter__(self):
         return iter(self._tokens)
 

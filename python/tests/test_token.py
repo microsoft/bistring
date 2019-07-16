@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 from bistring import bistr, Token, Tokenization, Tokenizer
+import pytest
 
 
 def test_tokenization():
@@ -31,6 +32,14 @@ def test_tokenization():
     assert tokens.slice_by_original(9, 15).text == bistr('brown fox')
     assert tokens.snap_text_bounds(8, 14) == (6, 15)
     assert tokens.snap_original_bounds(9, 15) == (7, 16)
+
+
+def test_infer():
+    text = 'the quick, brown fox'
+    tokens = Tokenization.infer(text, ['the', 'quick', 'brown', 'fox'])
+    assert tokens.substring(1, 3) == bistr('quick, brown')
+
+    pytest.raises(ValueError, Tokenization.infer, text, ['the', 'quick', 'red', 'fox'])
 
 
 def test_regex_tokenizer():
