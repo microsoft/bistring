@@ -14,6 +14,56 @@ from ._typing import Bounds, Range
 class Alignment:
     """
     An alignment between two related sequences.
+
+    Consider this alignments between two strings:
+
+    .. code-block:: text
+
+        |it's| |aligned!|
+        |    \ \        |
+        |it is| |aligned|
+
+    An alignment stores all the indices that are known to correspond between the original and modified sequences.  For
+    the above example, it would be
+
+        >>> a = Alignment([
+        ...     (0, 0),
+        ...     (4, 5),
+        ...     (5, 6),
+        ...     (13, 13),
+        ... ])
+
+    Alignments can be used to answer questions like, "what's the smallest range of the original sequence that is
+    guaranteed to contain this part of the modified sequence?"  For example, the range ``(0, 5)`` ("it is") is known to
+    match the range ``(0, 4)`` ("it's") of the original sequence:
+
+        >>> a.original_bounds(0, 5)
+        (0, 4)
+
+    Results may be imprecise if the alignment is too course to match the exact inputs:
+
+        >>> a.original_bounds(0, 2)
+        (0, 4)
+
+    A more granular alignment like this:
+
+    .. code-block:: text
+
+        |i|t|'s| |a|l|i|g|n|e|d|!|
+        | | |  \ \ \ \ \ \ \ \ \ /
+        |i|t| is| |a|l|i|g|n|e|d|
+
+    .. doctest::
+
+        >>> a = Alignment([
+        ...     (0, 0), (1, 1), (2, 2), (4, 5), (5, 6), (6, 7), (7, 8),
+        ...     (8, 9), (9, 10), (10, 11), (11, 12), (12, 13), (13, 13),
+        ... ])
+
+    Can be more precise:
+
+        >>> a.original_bounds(0, 2)
+        (0, 2)
     """
 
     __slots__ = ('_original', '_modified')
@@ -22,6 +72,12 @@ class Alignment:
     _modified: List[int]
 
     def __init__(self, values: Iterable[Bounds]):
+        """
+        :param values:
+            The sequence of aligned indices.  Each element should be a tuple ``(x, y)``, where `x` is the original
+            sequence position and `y` is the modified sequence position.
+        """
+
         self._original = []
         self._modified = []
         for i, j in values:
@@ -109,6 +165,23 @@ class Alignment:
 
     @classmethod
     def identity(cls, *args):
+        """
+        Create an identity alignment, which maps all intervals to themselves.  You can pass the size of the sequence:
+
+            >>> Alignment.identity(5)
+            Alignment.identity(5)
+
+        or the start and end positions:
+
+            >>> Alignment.identity(1, 5)
+            Alignment.identity(1, 5)
+
+        or a range-like object (:class:`range`, :class:`slice`, or ``Tuple[int, int]``):
+
+            >>> Alignment.identity(range(1, 5))
+            Alignment.identity(1, 5)
+        """
+
         start, stop = cls._parse_args(args)
         values = list(range(start, stop + 1))
         return cls._create(values, values)
@@ -120,6 +193,19 @@ class Alignment:
         return len(self._original)
 
     def __getitem__(self, index):
+        """
+        Indexing an alignment returns the nth pair of aligned positions:
+
+            >>> a = Alignment.identity(5)
+            >>> a[3]
+            (3, 3)
+
+        Slicing an alignment returns a new alignment with a subrange of its values:
+
+            >>> a[1:5]
+            Alignment.identity(1, 4)
+        """
+
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
@@ -162,24 +248,89 @@ class Alignment:
         return (target[i], target[j])
 
     def original_bounds(self, *args) -> Bounds:
+        """
+        Maps a subrange of the modified sequence to the original sequence.  Can be called with either two arguments:
+
+            >>> a = Alignment.identity(5).shift(1, 0)
+            >>> a.original_bounds(1, 3)
+            (2, 4)
+
+        or with a range-like object:
+
+            >>> a.original_bounds(range(1, 3))
+            (2, 4)
+
+        With no arguments, returns the bounds of the entire original sequence:
+
+            >>> a.original_bounds()
+            (1, 6)
+
+        :returns:
+            The corresponding bounds in the original sequence.
+        """
+
         return self._bounds(self._modified, self._original, args)
 
     def original_range(self, *args) -> range:
+        """
+        Like :meth:`original_bounds`, but returns a :class:`range`.
+        """
         return range(*self.original_bounds(*args))
 
     def original_slice(self, *args) -> slice:
+        """
+        Like :meth:`original_bounds`, but returns a :class:`slice`.
+        """
         return slice(*self.original_bounds(*args))
 
     def modified_bounds(self, *args) -> Bounds:
+        """
+        Maps a subrange of the original sequence to the modified sequence.  Can be called with either two arguments:
+
+            >>> a = Alignment.identity(5).shift(1, 0)
+            >>> a.modified_bounds(2, 4)
+            (1, 3)
+
+        or with a range-like object:
+
+            >>> a.modified_bounds(range(2, 4))
+            (1, 3)
+
+        With no arguments, returns the bounds of the entire modified sequence:
+
+            >>> a.modified_bounds()
+            (0, 5)
+
+        :returns:
+            The corresponding bounds in the modified sequence.
+        """
+
         return self._bounds(self._original, self._modified, args)
 
     def modified_range(self, *args) -> range:
+        """
+        Like :meth:`modified_bounds`, but returns a :class:`range`.
+        """
         return range(*self.modified_bounds(*args))
 
     def modified_slice(self, *args) -> slice:
+        """
+        Like :meth:`modified_bounds`, but returns a :class:`range`.
+        """
         return slice(*self.modified_bounds(*args))
 
     def slice_by_original(self, *args) -> Alignment:
+        """
+        Slice this alignment by a span of the original sequence.
+
+            >>> a = Alignment.identity(5).shift(1, 0)
+            >>> a.slice_by_original(2, 4)
+            Alignment([(2, 1), (3, 2), (4, 3)])
+
+        :returns:
+            The slice of this alignment that corresponds with the given span of the original sequence.
+        """
+
         start, stop = self._parse_args(args)
         first, last = self._search(self._original, start, stop)
         original = self._original[first:last+1]
@@ -188,6 +339,17 @@ class Alignment:
         return self._create(original, modified)
 
     def slice_by_modified(self, *args) -> Alignment:
+        """
+        Slice this alignment by a span of the modified sequence.
+
+            >>> a = Alignment.identity(5).shift(1, 0)
+            >>> a.slice_by_modified(1, 3)
+            Alignment([(2, 1), (3, 2), (4, 3)])
+
+        :returns:
+            The slice of this alignment that corresponds with the given span of the modified sequence.
+        """
+
         start, stop = self._parse_args(args)
         first, last = self._search(self._modified, start, stop)
         original = self._original[first:last+1]
@@ -218,8 +380,8 @@ class Alignment:
 
     def compose(self, other: Alignment) -> Alignment:
         """
-        Return a new alignment equivalent to applying this one first, then the
-        other.
+        :returns:
+            A new alignment equivalent to applying this one first, then the `other`.
         """
 
         if self.modified_bounds() != other.original_bounds():
@@ -257,6 +419,7 @@ class Alignment:
 
     def inverse(self) -> Alignment:
         """
-        The inverse of this alignment, from the modified to the original sequence.
+        :returns:
+            The inverse of this alignment, from the modified to the original sequence.
         """
         return self._create(self._modified, self._original)
