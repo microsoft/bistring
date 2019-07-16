@@ -6,7 +6,8 @@ from __future__ import annotations
 __all__ = ['bistr']
 
 from itertools import islice
-from typing import Iterable, List, Optional, Tuple, Union
+from numbers import Number
+from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 from ._alignment import Alignment
 from ._typing import Bounds, Regex, Replacement, String
@@ -95,6 +96,38 @@ class bistr:
         super().__setattr__(result, 'modified', modified)
         super().__setattr__(result, 'alignment', alignment)
         return result
+
+    @classmethod
+    def infer(cls, original: str, modified: str, cost_fn: Optional[Callable[[str, str], Number]] = None):
+        """
+        Create a `bistr`, automatically inferring an alignment between the `original` and `modified` strings.
+
+        This method can be useful if the modified string was produced by some method out of your control.  If at all
+        possible, you should start with ``bistr(original)`` and perform non-destructive operations to get to the
+        modified string instead.
+
+            >>> s = bistr.infer('color', 'colour')
+            >>> print(s[0:3])
+            ⮎'col'⮌
+            >>> print(s[3:5])
+            ('o' ⇋ 'ou')
+            >>> print(s[5:6])
+            ⮎'r'⮌
+
+        Warning: this operation has time complexity ``O(N*M)``, where `N` and `M` are the lengths of the original and
+        modified strings, and so should only be used for relatively short strings.
+
+        :param original:
+            The original string
+        :param modified:
+            The modified string.
+        :param cost_fn:
+            A function returning the cost of performing an edit (see :meth:`Alignment.infer`).
+        :returns:
+            A `bistr` with the inferred alignment.
+        """
+
+        return cls(original, modified, Alignment.infer(original, modified, cost_fn))
 
     def __str__(self):
         if self.original == self.modified:

@@ -6,13 +6,19 @@ from __future__ import annotations
 __all__ = ['Alignment']
 
 import bisect
-from typing import Iterable, List, Optional, Tuple, cast, overload
+from numbers import Number
+from typing import Callable, Iterable, List, Optional, Sequence, Tuple, TypeVar, cast, overload
 
 from ._typing import Bounds, Range
 
 
+_T = TypeVar('T')
+_U = TypeVar('U')
+_CostFn = Callable[[Optional[_T], Optional[_U]], Number]
+
+
 class Alignment:
-    """
+    r"""
     An alignment between two related sequences.
 
     Consider this alignments between two strings:
@@ -186,6 +192,156 @@ class Alignment:
         values = list(range(start, stop + 1))
         return cls._create(values, values)
 
+    @classmethod
+    def _infer_costs(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: _CostFn) -> List[Number]:
+        """
+        The Needleman–Wunsch or Wagner–Fischer algorithm.  Here we use it in a way that only computes the final row of
+        costs, without finding the alignment itself.  Hirschberg's algorithm uses it as a subroutine to find the optimal
+        alignment in less than O(N*M) space.
+
+        https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
+        https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm
+        """
+
+        row = [0]
+        for i, m in enumerate(modified):
+            cost = row[i] + cost_fn(None, m)
+            row.append(cost)
+
+        prev = [0] * len(row)
+
+        for o in original:
+            prev, row = row, prev
+            row[0] = prev[0] + cost_fn(o, None)
+
+            for i, m in enumerate(modified):
+                sub_cost = prev[i] + cost_fn(o, m)
+                del_cost = prev[i + 1] + cost_fn(o, None)
+                ins_cost = row[i] + cost_fn(None, m)
+                row[i + 1] = min(sub_cost, del_cost, ins_cost)
+
+        return row
+
+    @classmethod
+    def _infer_matrix(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: Optional[_CostFn] = None) -> List[Bounds]:
+        """
+        The Needleman–Wunsch or Wagner–Fischer algorithm, using the entire matrix to compute the optimal alignment.
+        """
+
+        row = [(0, -1, -1)]
+        for j, m in enumerate(modified):
+            cost = row[j][0] + cost_fn(None, m)
+            row.append((cost, 0, j))
+
+        matrix = [row]
+
+        for i, o in enumerate(original):
+            prev = matrix[i]
+            cost = prev[0][0] + cost_fn(o, None)
+            row = [(cost, i, 0)]
+
+            for j, m in enumerate(modified):
+                cost = prev[j][0] + cost_fn(o, m)
+                x, y = i, j
+
+                del_cost = prev[j + 1][0] + cost_fn(o, None)
+                if del_cost < cost:
+                    cost = del_cost
+                    x, y = i, j + 1
+
+                ins_cost = row[j][0] + cost_fn(None, m)
+                if ins_cost < cost:
+                    cost = ins_cost
+                    x, y = i + 1, j
+
+                row.append((cost, x, y))
+
+            matrix.append(row)
+
+        result = []
+        i = len(matrix) - 1
+        j = len(matrix[i]) - 1
+        while i >= 0:
+            result.append((i, j))
+            _, i, j = matrix[i][j]
+
+        result.reverse()
+        return result
+
+    @classmethod
+    def _infer_recursive(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: _CostFn) -> List[Bounds]:
+        """
+        Hirschberg's algorithm for computing optimal alignments in linear space.
+
+        https://en.wikipedia.org/wiki/Hirschberg's_algorithm
+        """
+
+        if len(original) <= 1 or len(modified) <= 1:
+            return cls._infer_matrix(original, modified, cost_fn)
+
+        omid = len(original) // 2
+        oleft = original[:omid]
+        oright = original[omid:]
+
+        lcosts = cls._infer_costs(oleft, modified, cost_fn)
+        rcosts = cls._infer_costs(oright[::-1], modified[::-1], cost_fn)[::-1]
+
+        mmid = min(range(len(modified)), key=lambda i: lcosts[i] + rcosts[i])
+        mleft = modified[:mmid]
+        mright = modified[mmid:]
+
+        left = cls._infer_recursive(oleft, mleft, cost_fn)
+        right = cls._infer_recursive(oright, mright, cost_fn)
+        for (o, m) in right:
+            left.append((o + omid, m + mmid))
+        return left
+
+    @classmethod
+    def infer(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: Optional[_CostFn] = None) -> Alignment:
+        """
+        Infer the alignment between two sequences with the lowest edit distance.
+
+            >>> Alignment.infer('color', 'color')
+            Alignment.identity(5)
+            >>> a = Alignment.infer('color', 'colour')
+            >>> # 'ou' -> 'o'
+            >>> a.original_bounds(3, 5)
+            (3, 4)
+
+        Warning: this operation has time complexity ``O(N*M)``, where `N` and `M` are the lengths of the original and
+        modified sequences, and so should only be used for relatively short sequences.
+
+        :param original:
+            The original sequence.
+        :param modified:
+            The modified sequence.
+        :param cost_fn:
+            A function returning the cost of performing an edit.  ``cost_fn(a, b)`` returns the cost of replacing `a`
+            with `b`.  ``cost_fn(a, None)`` returns the cost of deleting `a`, and ``cost_fn(None, b)`` returns the cost
+            of inserting `b`.  By default, all operations have cost 1 except replacing identical elements, which has
+            cost 0.
+        :returns:
+            The inferred alignment.
+        """
+
+        if cost_fn is None:
+            cost_fn = lambda a, b: int(a != b)
+
+        if len(original) < len(modified):
+            swap = True
+            original, modified = modified, original
+            real_cost_fn = lambda a, b: cost_fn(b, a)
+        else:
+            swap = False
+            real_cost_fn = cost_fn
+
+        result = cls._infer_recursive(original, modified, real_cost_fn)
+        result = Alignment(result)
+        if swap:
+            return result.inverse()
+        else:
+            return result
+
     def __iter__(self):
         return zip(self._original, self._modified)
 
@@ -214,12 +370,16 @@ class Alignment:
         else:
             return (self._original[index], self._modified[index])
 
-    def shift(self, delta_o: int, delta_m: int):
+    def shift(self, delta_o: int, delta_m: int) -> Alignment:
         """
         Shift this alignment.
 
-        :param delta_o: The distance to shift the original sequence.
-        :param delta_m: The distance to shift the modified sequence.
+        :param delta_o:
+            The distance to shift the original sequence.
+        :param delta_m:
+            The distance to shift the modified sequence.
+        :returns:
+            An alignment with all the positions shifted by the given amounts.
         """
 
         return self._create(

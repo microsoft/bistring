@@ -105,3 +105,18 @@ def test_compose_identity():
 
     # Original sequence is smaller
     _test_identity_composition(alignment.inverse())
+
+
+def test_infer():
+    assert Alignment.infer('test', 'test') == Alignment.identity(4)
+    assert Alignment.infer('asdf', 'jkl;') == Alignment.identity(4)
+
+    assert Alignment.infer('color', 'colour') == Alignment([
+        (0, 0),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (4, 5),
+        (5, 6),
+    ])
