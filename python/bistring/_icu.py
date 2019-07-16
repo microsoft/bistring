@@ -65,7 +65,7 @@ def _normalize(bs: bistr, normalizer: icu.Normalizer2) -> bistr:
                 break
 
         chunk = us[:i]
-        normalized = str(normalizer.normalize(chunk))
+        normalized = normalizer.normalize(chunk)
         builder.replace(chunk.countChar32(), normalized)
         us = us[i:]
 

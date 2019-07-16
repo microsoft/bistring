@@ -37,6 +37,8 @@ def test_infer():
     bs = bistr.infer('color', 'colour')
     assert bs[3:5].original == 'o'
 
+    assert bs.inverse() == bistr.infer('colour', 'color')
+
 
 def test_concat():
     bs = bistr('  ', '')
@@ -117,6 +119,30 @@ def test_split():
     assert bs.split(maxsplit=1) == [bistr('1'), bistr('2   3   ')]
 
     assert bistr('').split() == []
+
+
+def test_partition():
+    bs = bistr('left::middle::right')
+
+    left, sep, right = bs.partition('::')
+    assert left == bistr('left')
+    assert sep == bistr('::')
+    assert right == bistr('middle::right')
+
+    left, sep, right = bs.partition(':::')
+    assert left == bs
+    assert sep == bistr('')
+    assert right == bistr('')
+
+    left, sep, right = bs.rpartition('::')
+    assert left == bistr('left::middle')
+    assert sep == bistr('::')
+    assert right == bistr('right')
+
+    left, sep, right = bs.rpartition(':::')
+    assert left == bistr('')
+    assert sep == bistr('')
+    assert right == bs
 
 
 def test_expandtabs():

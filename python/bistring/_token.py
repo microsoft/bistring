@@ -21,9 +21,9 @@ import threading
 from typing import Callable, Iterable, Sequence
 
 from ._alignment import Alignment
-from ._bistr import bistr
+from ._bistr import bistr, String
 from ._regex import compile_regex
-from ._typing import Bounds, Regex, String
+from ._typing import Bounds, Regex
 
 
 @dataclass(frozen=True)

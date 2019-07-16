@@ -120,3 +120,5 @@ def test_infer():
         (4, 5),
         (5, 6),
     ])
+
+    assert Alignment.infer('color', 'colour') == Alignment.infer('colour', 'color').inverse()

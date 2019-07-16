@@ -6,15 +6,15 @@ from __future__ import annotations
 __all__ = ['Alignment']
 
 import bisect
-from numbers import Number
+from numbers import Real
 from typing import Callable, Iterable, List, Optional, Sequence, Tuple, TypeVar, cast, overload
 
 from ._typing import Bounds, Range
 
 
-_T = TypeVar('T')
-_U = TypeVar('U')
-_CostFn = Callable[[Optional[_T], Optional[_U]], Number]
+T = TypeVar('T')
+U = TypeVar('U')
+CostFn = Callable[[Optional[T], Optional[U]], Real]
 
 
 class Alignment:
@@ -193,7 +193,7 @@ class Alignment:
         return cls._create(values, values)
 
     @classmethod
-    def _infer_costs(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: _CostFn) -> List[Number]:
+    def _infer_costs(cls, original: Sequence[T], modified: Sequence[U], cost_fn: CostFn[T, U]) -> List[Real]:
         """
         The Needleman–Wunsch or Wagner–Fischer algorithm.  Here we use it in a way that only computes the final row of
         costs, without finding the alignment itself.  Hirschberg's algorithm uses it as a subroutine to find the optimal
@@ -223,7 +223,7 @@ class Alignment:
         return row
 
     @classmethod
-    def _infer_matrix(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: Optional[_CostFn] = None) -> List[Bounds]:
+    def _infer_matrix(cls, original: Sequence[T], modified: Sequence[U], cost_fn: CostFn[T, U]) -> List[Bounds]:
         """
         The Needleman–Wunsch or Wagner–Fischer algorithm, using the entire matrix to compute the optimal alignment.
         """
@@ -269,7 +269,7 @@ class Alignment:
         return result
 
     @classmethod
-    def _infer_recursive(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: _CostFn) -> List[Bounds]:
+    def _infer_recursive(cls, original: Sequence[T], modified: Sequence[U], cost_fn: CostFn[T, U]) -> List[Bounds]:
         """
         Hirschberg's algorithm for computing optimal alignments in linear space.
 
@@ -297,7 +297,7 @@ class Alignment:
         return left
 
     @classmethod
-    def infer(cls, original: Sequence[_T], modified: Sequence[_U], cost_fn: Optional[_CostFn] = None) -> Alignment:
+    def infer(cls, original: Sequence[T], modified: Sequence[U], cost_fn: Optional[CostFn[T, U]] = None) -> Alignment:
         """
         Infer the alignment between two sequences with the lowest edit distance.
 
@@ -329,18 +329,17 @@ class Alignment:
 
         if len(original) < len(modified):
             swap = True
-            original, modified = modified, original
-            real_cost_fn = lambda a, b: cost_fn(b, a)
+            swapped_cost_fn = lambda a, b: cost_fn(b, a)
+            result = cls._infer_recursive(modified, original, swapped_cost_fn)
         else:
             swap = False
-            real_cost_fn = cost_fn
+            result = cls._infer_recursive(original, modified, cost_fn)
 
-        result = cls._infer_recursive(original, modified, real_cost_fn)
-        result = Alignment(result)
+        alignment = Alignment(result)
         if swap:
-            return result.inverse()
+            return alignment.inverse()
         else:
-            return result
+            return alignment
 
     def __iter__(self):
         return zip(self._original, self._modified)

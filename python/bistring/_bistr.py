@@ -6,11 +6,14 @@ from __future__ import annotations
 __all__ = ['bistr']
 
 from itertools import islice
-from numbers import Number
+from numbers import Real
 from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 from ._alignment import Alignment
-from ._typing import Bounds, Regex, Replacement, String
+from ._typing import Bounds, Regex, Replacement
+
+
+CostFn = Callable[[Optional[str], Optional[str]], Real]
 
 
 class bistr:
@@ -98,7 +101,7 @@ class bistr:
         return result
 
     @classmethod
-    def infer(cls, original: str, modified: str, cost_fn: Optional[Callable[[str, str], Number]] = None):
+    def infer(cls, original: str, modified: str, cost_fn: Optional[CostFn] = None):
         """
         Create a `bistr`, automatically inferring an alignment between the `original` and `modified` strings.
 
@@ -394,7 +397,7 @@ class bistr:
         if i >= 0:
             return self[:i], self[i:j], self[j:]
         else:
-            return self, bistr(), bistr()
+            return self, bistr(''), bistr('')
 
     def rpartition(self, sep: str) -> Tuple[bistr, bistr, bistr]:
         """
@@ -405,7 +408,7 @@ class bistr:
         if i >= 0:
             return self[:i], self[i:j], self[j:]
         else:
-            return self, bistr(), bistr()
+            return bistr(''), bistr(''), self
 
     def center(self, width: int, fillchar: str = ' ') -> bistr:
         """
@@ -671,3 +674,6 @@ class bistr:
 
         from ._icu import normalize
         return normalize(self, form)
+
+
+String = Union[str, 'bistr']

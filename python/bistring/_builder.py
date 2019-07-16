@@ -6,9 +6,9 @@ __all__ = ['BistrBuilder']
 from typing import Iterable, List, Match, Optional, Pattern, Tuple
 
 from ._alignment import Alignment
-from ._bistr import bistr
+from ._bistr import bistr, String
 from ._regex import compile_regex, expand_template
-from ._typing import Bounds, Regex, Replacement, String
+from ._typing import Bounds, Regex, Replacement
 
 
 class BistrBuilder:
