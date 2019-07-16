@@ -30,6 +30,14 @@ def test_new():
     ]))
 
 
+def test_infer():
+    bs = bistr.infer('test', 'test')
+    assert bs == bistr('test', 'test', Alignment.identity(4))
+
+    bs = bistr.infer('color', 'colour')
+    assert bs[3:5].original == 'o'
+
+
 def test_concat():
     bs = bistr('  ', '')
     bs += 'Hello'
