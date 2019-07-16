@@ -70,7 +70,7 @@ What about similar-looking strings, that aren't necessarily identical?
 Unicode contains things like ligatures, alternative scripts, and other oddities than can result in similar-looking strings that are represented very differently.
 Here is where the "compatibility" normalization forms, NFKC and NFKD, can help:
 
-    >>> s = bistr("𝕳𝖊𝖑𝖑𝖔 𝖜𝖔𝖗𝖑𝖉")
+    >>> s = bistr('𝕳𝖊𝖑𝖑𝖔 𝖜𝖔𝖗𝖑𝖉')
     >>> s = s.normalize('NFKC')
     >>> s
     bistr('𝕳𝖊𝖑𝖑𝖔 𝖜𝖔𝖗𝖑𝖉', 'Hello world', Alignment.identity(11))
