@@ -3,7 +3,7 @@ Frequently Asked Questions
 
 .. testsetup:: *
 
-    from bistring import bistr
+    from bistring import bistr, Tokenization
 
 
 How do I convert indices back and forth between the original and modified strings?
@@ -93,6 +93,21 @@ While this may be the right behaviour if you're displaying strings to the curren
     bistr('i', 'İ')
 
 
+What if I don't know the alignment?
+-----------------------------------
+
+If at all possible, you should use `bistring` all the way through your text processing code, which will ensure an accurate alignment is tracked for you.
+If you don't control that code, or there are other reasons it won't work with `bistring`, you can still have us guess an alignment for you in simple cases with :meth:`bistr.infer`.
+
+    >>> s = bistr.infer('color', 'colour')
+    >>> print(s[0:3])
+    ⮎'col'⮌
+    >>> print(s[3:5])
+    ('o' ⇋ 'ou')
+    >>> print(s[5:6])
+    ⮎'r'⮌
+
+
 Tokenization
 ------------
 
@@ -143,3 +158,16 @@ How to I snap a substring of text to the nearest token boundaries?
     (4, 16)
     >>> tokens.text[4:16]
     bistr('quick, brown')
+
+
+What if I don't know the token positions?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If at all possible, you should use a :class:`bistr.Tokenizer` or some other method that tokenizes with position information.
+If you can't, you can use :meth:`bistr.Tokenization.infer` to guess the alignment for you:
+
+    >>> tokens = Tokenization.infer('hello, world!', ['hello', 'world'])
+    >>> tokens[0]
+    Token(bistr('hello'), start=0, end=5)
+    >>> tokens[1]
+    Token(bistr('world'), start=7, end=12)
