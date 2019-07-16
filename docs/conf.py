@@ -36,6 +36,7 @@ release = '0.1'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
     'sphinx_autodoc_typehints',
 ]
 
@@ -46,6 +47,10 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+}
 
 autoclass_content = 'both'
 
