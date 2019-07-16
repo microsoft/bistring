@@ -18,12 +18,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import icu
 import threading
-from typing import Callable, Iterable, Sequence
+from typing import Callable, Iterable, Iterator, Sequence, Union, overload
 
 from ._alignment import Alignment
 from ._bistr import bistr, String
 from ._regex import compile_regex
-from ._typing import Bounds, Regex
+from ._typing import AnyBounds, Bounds, Index, Regex
 
 
 @dataclass(frozen=True)
@@ -68,10 +68,10 @@ class Token:
         """
         return cls(text[start:end], start, end)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'[{self.start}:{self.end}]={self.text}'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Token({self.text!r}, start={self.start}, end={self.end})'
 
 
@@ -139,13 +139,19 @@ class Tokenization:
 
         return cls(text, result)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Token]:
         return iter(self._tokens)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._tokens)
 
-    def __getitem__(self, index):
+    @overload
+    def __getitem__(self, index: int) -> Token: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Tokenization: ...
+
+    def __getitem__(self, index: Index) -> Union[Token, Tokenization]:
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
@@ -160,38 +166,38 @@ class Tokenization:
         else:
             return self._tokens[index]
 
-    def __str__(self):
+    def __str__(self) -> str:
         tokens = ', '.join(map(str, self))
         return f'Tokenization({self.text}, [{tokens}])'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Tokenization({self.text!r}, {self._tokens!r})'
 
-    def substring(self, *args) -> Bounds:
+    def substring(self, *args: AnyBounds) -> bistr:
         """
         Map a span of tokens to the corresponding substring.
         """
         return self.text[self.alignment.original_slice(*args)]
 
-    def text_bounds(self, *args) -> Bounds:
+    def text_bounds(self, *args: AnyBounds) -> Bounds:
         """
         Map a span of tokens to the bounds of the corresponding text.
         """
         return self.alignment.original_bounds(*args)
 
-    def original_bounds(self, *args) -> Bounds:
+    def original_bounds(self, *args: AnyBounds) -> Bounds:
         """
         Map a span of tokens to the bounds of the corresponding original text.
         """
         return self.text.alignment.original_bounds(self.text_bounds(*args))
 
-    def bounds_for_text(self, *args) -> Bounds:
+    def bounds_for_text(self, *args: AnyBounds) -> Bounds:
         """
         Map a span of text to the bounds of the corresponding span of tokens.
         """
         return self.alignment.modified_bounds(*args)
 
-    def bounds_for_original(self, *args) -> Bounds:
+    def bounds_for_original(self, *args: AnyBounds) -> Bounds:
         """
         Map a span of original text to the bounds of the corresponding span of
         tokens.
@@ -199,27 +205,27 @@ class Tokenization:
         text_bounds = self.text.alignment.modified_bounds(*args)
         return self.alignment.modified_bounds(text_bounds)
 
-    def slice_by_text(self, *args) -> Tokenization:
+    def slice_by_text(self, *args: AnyBounds) -> Tokenization:
         """
         Map a span of text to the corresponding span of tokens.
         """
         i, j = self.bounds_for_text(*args)
         return self[i:j]
 
-    def slice_by_original(self, *args) -> Tokenization:
+    def slice_by_original(self, *args: AnyBounds) -> Tokenization:
         """
         Map a span of the original text to the corresponding span of tokens.
         """
         i, j = self.bounds_for_original(*args)
         return self[i:j]
 
-    def snap_text_bounds(self, *args) -> Bounds:
+    def snap_text_bounds(self, *args: AnyBounds) -> Bounds:
         """
         Expand a span of text to align it with token boundaries.
         """
         return self.text_bounds(self.bounds_for_text(*args))
 
-    def snap_original_bounds(self, *args) -> Bounds:
+    def snap_original_bounds(self, *args: AnyBounds) -> Bounds:
         """
         Expand a span of original text to align it with token boundaries.
         """
@@ -294,7 +300,7 @@ class _IcuTokenizer(Tokenizer):
     Base class for ICU BreakIterator-based tokenizers.
     """
 
-    def __init__(self, locale: str, constructor: Callable):
+    def __init__(self, locale: str, constructor: Callable[[icu.Locale], icu.BreakIterator]):
         # BreakIterator is not a thread-safe API, so store a cache of
         # thread-local iterators
         self._locale = icu.Locale(locale)

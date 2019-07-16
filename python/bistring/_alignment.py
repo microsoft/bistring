@@ -6,14 +6,14 @@ from __future__ import annotations
 __all__ = ['Alignment']
 
 import bisect
-from numbers import Real
-from typing import Callable, Iterable, List, Optional, Sequence, Tuple, TypeVar, cast, overload
+from typing import Any, Callable, Iterable, Iterator, List, Optional, Sequence, Tuple, TypeVar, Union, cast, overload
 
-from ._typing import Bounds, Range
+from ._typing import AnyBounds, Bounds, Index, Range
 
 
 T = TypeVar('T')
 U = TypeVar('U')
+Real = Union[int, float]
 CostFn = Callable[[Optional[T], Optional[U]], Real]
 
 
@@ -108,7 +108,7 @@ class Alignment:
         result._modified = modified
         return result
 
-    def __str__(self):
+    def __str__(self) -> str:
         i, j = self._original[0], self._original[-1]
         k, l = self._modified[0], self._modified[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(k, l + 1)):
@@ -116,7 +116,7 @@ class Alignment:
         else:
             return '[' + ', '.join(f'{i}⇋{j}' for i, j in self) + ']'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         i, j = self._original[0], self._original[-1]
         if self._original == list(range(i, j + 1)) and self._modified == list(range(i, j + 1)):
             if i == 0:
@@ -126,17 +126,17 @@ class Alignment:
         else:
             return 'Alignment([' + ', '.join(map(repr, self)) + '])'
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, Alignment):
             return (self._original, self._modified) == (other._original, other._modified)
         else:
             return NotImplemented
 
     @classmethod
-    def _parse_args(cls, args: Tuple) -> Bounds:
+    def _parse_bounds(cls, args: Tuple[AnyBounds, ...]) -> Bounds:
         l = len(args)
         if l == 0:
-            return None, None
+            raise TypeError('Not enough arguments')
         elif l == 1:
             arg = args[0]
             if isinstance(arg, range):
@@ -154,23 +154,27 @@ class Alignment:
         else:
             raise TypeError('Too many arguments')
 
-    @overload
     @classmethod
-    def identity(cls, length: int) -> Alignment:
-        ...
+    def _parse_optional_bounds(cls, args: Tuple[AnyBounds, ...]) -> Union[Bounds, Tuple[None, None]]:
+        if len(args) == 0:
+            return None, None
+        else:
+            return cls._parse_bounds(args)
 
     @overload
     @classmethod
-    def identity(cls, start: int, stop: int) -> Alignment:
-        ...
+    def identity(cls, __length: int) -> Alignment: ...
 
     @overload
     @classmethod
-    def identity(cls, bounds: Range) -> Alignment:
-        ...
+    def identity(cls, __start: int, __stop: int) -> Alignment: ...
+
+    @overload
+    @classmethod
+    def identity(cls, __bounds: Range) -> Alignment: ...
 
     @classmethod
-    def identity(cls, *args):
+    def identity(cls, *args: Union[int, range, slice, Bounds]) -> Alignment:
         """
         Create an identity alignment, which maps all intervals to themselves.  You can pass the size of the sequence:
 
@@ -188,7 +192,7 @@ class Alignment:
             Alignment.identity(1, 5)
         """
 
-        start, stop = cls._parse_args(args)
+        start, stop = cls._parse_bounds(args)
         values = list(range(start, stop + 1))
         return cls._create(values, values)
 
@@ -203,12 +207,12 @@ class Alignment:
         https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm
         """
 
-        row = [0]
+        row: List[Real] = [0]
         for i, m in enumerate(modified):
             cost = row[i] + cost_fn(None, m)
             row.append(cost)
 
-        prev = [0] * len(row)
+        prev: List[Real] = [0] * len(row)
 
         for o in original:
             prev, row = row, prev
@@ -228,7 +232,7 @@ class Alignment:
         The Needleman–Wunsch or Wagner–Fischer algorithm, using the entire matrix to compute the optimal alignment.
         """
 
-        row = [(0, -1, -1)]
+        row: List[Tuple[Real, int, int]] = [(0, -1, -1)]
         for j, m in enumerate(modified):
             cost = row[j][0] + cost_fn(None, m)
             row.append((cost, 0, j))
@@ -325,29 +329,31 @@ class Alignment:
         """
 
         if cost_fn is None:
-            cost_fn = lambda a, b: int(a != b)
+            real_cost_fn: CostFn[T, U] = lambda a, b: int(a != b)
+        else:
+            real_cost_fn = cost_fn
 
         if len(original) < len(modified):
-            swap = True
-            swapped_cost_fn = lambda a, b: cost_fn(b, a)
+            swapped_cost_fn = lambda a, b: real_cost_fn(b, a)
             result = cls._infer_recursive(modified, original, swapped_cost_fn)
+            return Alignment(result).inverse()
         else:
-            swap = False
-            result = cls._infer_recursive(original, modified, cost_fn)
+            result = cls._infer_recursive(original, modified, real_cost_fn)
+            return Alignment(result)
 
-        alignment = Alignment(result)
-        if swap:
-            return alignment.inverse()
-        else:
-            return alignment
-
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[int, int]]:
         return zip(self._original, self._modified)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._original)
 
-    def __getitem__(self, index):
+    @overload
+    def __getitem__(self, index: int) -> Bounds: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Alignment: ...
+
+    def __getitem__(self, index: Index) -> Union[Bounds, Alignment]:
         """
         Indexing an alignment returns the nth pair of aligned positions:
 
@@ -398,15 +404,15 @@ class Alignment:
 
         return first, last
 
-    def _bounds(self, source: List[int], target: List[int], args: Tuple) -> Bounds:
-        start, stop = self._parse_args(args)
-        if start is None:
+    def _bounds(self, source: List[int], target: List[int], args: Tuple[AnyBounds, ...]) -> Bounds:
+        start, stop = self._parse_optional_bounds(args)
+        if start is None or stop is None:
             i, j = 0, -1
         else:
             i, j = self._search(source, start, stop)
         return (target[i], target[j])
 
-    def original_bounds(self, *args) -> Bounds:
+    def original_bounds(self, *args: AnyBounds) -> Bounds:
         """
         Maps a subrange of the modified sequence to the original sequence.  Can be called with either two arguments:
 
@@ -430,19 +436,19 @@ class Alignment:
 
         return self._bounds(self._modified, self._original, args)
 
-    def original_range(self, *args) -> range:
+    def original_range(self, *args: AnyBounds) -> range:
         """
         Like :meth:`original_bounds`, but returns a :class:`range`.
         """
         return range(*self.original_bounds(*args))
 
-    def original_slice(self, *args) -> slice:
+    def original_slice(self, *args: AnyBounds) -> slice:
         """
         Like :meth:`original_bounds`, but returns a :class:`slice`.
         """
         return slice(*self.original_bounds(*args))
 
-    def modified_bounds(self, *args) -> Bounds:
+    def modified_bounds(self, *args: AnyBounds) -> Bounds:
         """
         Maps a subrange of the original sequence to the modified sequence.  Can be called with either two arguments:
 
@@ -466,19 +472,19 @@ class Alignment:
 
         return self._bounds(self._original, self._modified, args)
 
-    def modified_range(self, *args) -> range:
+    def modified_range(self, *args: AnyBounds) -> range:
         """
         Like :meth:`modified_bounds`, but returns a :class:`range`.
         """
         return range(*self.modified_bounds(*args))
 
-    def modified_slice(self, *args) -> slice:
+    def modified_slice(self, *args: AnyBounds) -> slice:
         """
         Like :meth:`modified_bounds`, but returns a :class:`range`.
         """
         return slice(*self.modified_bounds(*args))
 
-    def slice_by_original(self, *args) -> Alignment:
+    def slice_by_original(self, *args: AnyBounds) -> Alignment:
         """
         Slice this alignment by a span of the original sequence.
 
@@ -490,14 +496,14 @@ class Alignment:
             The slice of this alignment that corresponds with the given span of the original sequence.
         """
 
-        start, stop = self._parse_args(args)
+        start, stop = self._parse_bounds(args)
         first, last = self._search(self._original, start, stop)
         original = self._original[first:last+1]
         original = [min(max(i, start), stop) for i in original]
         modified = self._modified[first:last+1]
         return self._create(original, modified)
 
-    def slice_by_modified(self, *args) -> Alignment:
+    def slice_by_modified(self, *args: AnyBounds) -> Alignment:
         """
         Slice this alignment by a span of the modified sequence.
 
@@ -509,14 +515,14 @@ class Alignment:
             The slice of this alignment that corresponds with the given span of the modified sequence.
         """
 
-        start, stop = self._parse_args(args)
+        start, stop = self._parse_bounds(args)
         first, last = self._search(self._modified, start, stop)
         original = self._original[first:last+1]
         modified = self._modified[first:last+1]
         modified = [min(max(i, start), stop) for i in modified]
         return self._create(original, modified)
 
-    def __add__(self, other):
+    def __add__(self, other: Any) -> Alignment:
         """
         Concatenate two alignments.
         """

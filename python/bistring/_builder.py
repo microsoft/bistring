@@ -3,7 +3,7 @@
 
 __all__ = ['BistrBuilder']
 
-from typing import Iterable, List, Match, Optional, Pattern, Tuple
+from typing import Iterable, List, Match, Optional, Tuple
 
 from ._alignment import Alignment
 from ._bistr import bistr, String
@@ -78,19 +78,19 @@ class BistrBuilder:
         """
         return self.remaining == 0
 
-    def peek(self, n: int):
+    def peek(self, n: int) -> str:
         """
         Peek at the next n characters of the original string.
         """
         return self.current[self._opos:self._opos+n]
 
-    def _advance(self, ocount, mcount):
+    def _advance(self, ocount: int, mcount: int) -> None:
         self._opos += ocount
         self._mpos += mcount
         if ocount > 0 or mcount > 0:
             self._alignment.append((self._opos, self._mpos))
 
-    def skip(self, n: int):
+    def skip(self, n: int) -> None:
         """
         Skip the next n characters, copying them unchanged.
         """
@@ -99,31 +99,31 @@ class BistrBuilder:
             for i in range(n):
                 self._advance(1, 1)
 
-    def skip_rest(self):
+    def skip_rest(self) -> None:
         """
         Skip the rest of the string, copying it unchanged.
         """
         self.skip(self.remaining)
 
-    def insert(self, string: str):
+    def insert(self, string: str) -> None:
         """
         Insert a substring into the string.
         """
         self.replace(0, string)
 
-    def discard(self, n: int):
+    def discard(self, n: int) -> None:
         """
         Discard a portion of the original string.
         """
         self.replace(n, '')
 
-    def discard_rest(self):
+    def discard_rest(self) -> None:
         """
         Discard the rest of the original string.
         """
         self.discard(self.remaining)
 
-    def replace(self, n: int, repl: str):
+    def replace(self, n: int, repl: str) -> None:
         """
         Replace the next n characters with a new string.
         """
@@ -131,7 +131,7 @@ class BistrBuilder:
             self._modified.append(repl)
         self._advance(n, len(repl))
 
-    def append(self, bs: bistr):
+    def append(self, bs: bistr) -> None:
         """
         Append a bistr.  The original value of the bistr must match the current
         string being processed.
@@ -198,7 +198,7 @@ class BistrBuilder:
         else:
             return False
 
-    def replace_all(self, regex: Regex, repl: Replacement):
+    def replace_all(self, regex: Regex, repl: Replacement) -> None:
         """
         Replace all occurences of a regex.
         """
@@ -207,14 +207,14 @@ class BistrBuilder:
             self.replace(match.end() - match.start(), expand_template(match, repl))
         self.skip_rest()
 
-    def build(self):
+    def build(self) -> bistr:
         """
         Build the bistr.
         """
         alignment = self._original.alignment.compose(self.alignment)
         return bistr(self.original, self.modified, alignment)
 
-    def rewind(self):
+    def rewind(self) -> None:
         """
         Reset this builder to apply another transformation.
         """
