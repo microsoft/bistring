@@ -13,7 +13,6 @@ from ._regex import compile_regex, expand_template
 from ._typing import Bounds, Index, Regex, Replacement
 
 
-String = Union[str, 'bistr']
 Real = Union[int, float]
 CostFn = Callable[[Optional[str], Optional[str]], Real]
 
@@ -676,6 +675,9 @@ class bistr:
 
         from ._icu import normalize
         return normalize(self, form)
+
+
+String = Union[str, bistr]
 
 
 if TYPE_CHECKING:
