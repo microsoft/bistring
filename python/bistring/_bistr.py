@@ -6,13 +6,15 @@ from __future__ import annotations
 __all__ = ['bistr']
 
 from itertools import islice
-from numbers import Real
-from typing import Callable, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Iterable, List, Match, Optional, Tuple, Union, overload, TYPE_CHECKING
 
 from ._alignment import Alignment
-from ._typing import Bounds, Regex, Replacement
+from ._regex import compile_regex, expand_template
+from ._typing import Bounds, Index, Regex, Replacement
 
 
+String = Union[str, 'bistr']
+Real = Union[int, float]
 CostFn = Callable[[Optional[str], Optional[str]], Real]
 
 
@@ -38,7 +40,7 @@ class bistr:
     The sequence alignment between :attr:`original` and :attr:`modified`.
     """
 
-    def __new__(cls, original: String, modified: Optional[str] = None, alignment: Optional[Alignment] = None):
+    def __new__(cls, original: String, modified: Optional[str] = None, alignment: Optional[Alignment] = None) -> bistr:
         """
         A `bistr` can be constructed from only a single string, which will give it identical original and modified
         strings and an identity alignment:
@@ -94,14 +96,14 @@ class bistr:
         elif alignment.modified_bounds() != (0, len(modified)):
             raise ValueError('Alignment incompatible with modified string')
 
-        result = super().__new__(cls)
-        super().__setattr__(result, 'original', original)
-        super().__setattr__(result, 'modified', modified)
-        super().__setattr__(result, 'alignment', alignment)
+        result = object.__new__(cls)
+        object.__setattr__(result, 'original', original)
+        object.__setattr__(result, 'modified', modified)
+        object.__setattr__(result, 'alignment', alignment)
         return result
 
     @classmethod
-    def infer(cls, original: str, modified: str, cost_fn: Optional[CostFn] = None):
+    def infer(cls, original: str, modified: str, cost_fn: Optional[CostFn] = None) -> bistr:
         """
         Create a `bistr`, automatically inferring an alignment between the `original` and `modified` strings.
 
@@ -132,13 +134,13 @@ class bistr:
 
         return cls(original, modified, Alignment.infer(original, modified, cost_fn))
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.original == self.modified:
             return f'⮎{self.original!r}⮌'
         else:
             return f'({self.original!r} ⇋ {self.modified!r})'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.original == self.modified and len(self.alignment) == len(self.original) + 1:
             return f'bistr({self.original!r})'
         elif len(self.alignment) == 2:
@@ -146,16 +148,16 @@ class bistr:
         else:
             return f'bistr({self.original!r}, {self.modified!r}, {self.alignment!r})'
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.modified)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, bistr):
             return (self.original, self.modified, self.alignment) == (other.original, other.modified, other.alignment)
         else:
             return NotImplemented
 
-    def __add__(self, other):
+    def __add__(self, other: Any) -> bistr:
         if isinstance(other, bistr):
             original = other.original
             modified = other.modified
@@ -170,7 +172,7 @@ class bistr:
         alignment = alignment.shift(len(self.original), len(self.modified))
         return bistr(self.original + original, self.modified + modified, self.alignment + alignment)
 
-    def __radd__(self, other):
+    def __radd__(self, other: Any) -> bistr:
         if isinstance(other, str):
             length = len(other)
             return bistr(
@@ -181,7 +183,13 @@ class bistr:
         else:
             return NotImplemented
 
-    def __getitem__(self, index):
+    @overload
+    def __getitem__(self, index: int) -> str: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> bistr: ...
+
+    def __getitem__(self, index: Index) -> String:
         """
         Indexing a `bistr` returns the nth character of the modified string:
 
@@ -211,10 +219,10 @@ class bistr:
         else:
             return self.modified[index]
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         raise AttributeError('bistr is immutable')
 
-    def __delattr__(self, name):
+    def __delattr__(self, name: str) -> None:
         raise AttributeError('bistr is immutable')
 
     def inverse(self) -> bistr:
@@ -445,7 +453,7 @@ class bistr:
         pad = width - len(self)
         return bistr('', fillchar * pad) + self
 
-    def _builder(self):
+    def _builder(self) -> BistrBuilder:
         from ._builder import BistrBuilder
         return BistrBuilder(self)
 
@@ -599,26 +607,24 @@ class bistr:
         builder.replace_all(regex, repl)
         return builder.build()
 
-    def _stripper(self, chars: Optional[str]):
+    def _should_strip(self, c: str, chars: Optional[str]) -> bool:
         if chars is None:
-            return lambda c: c.isspace()
+            return c.isspace()
         else:
-            return lambda c: c in chars
+            return c in chars
 
     def strip(self, chars: Optional[str] = None) -> bistr:
         """
         Like :meth:`str.strip`, removes leading and trailing characters (whitespace by default).
         """
 
-        should_strip = self._stripper(chars)
-
         length = len(self)
         pre = 0
-        while pre < length and should_strip(self.modified[pre]):
+        while pre < length and self._should_strip(self.modified[pre], chars):
             pre += 1
 
         post = length
-        while post > pre and should_strip(self.modified[post - 1]):
+        while post > pre and self._should_strip(self.modified[post - 1], chars):
             post -= 1
 
         builder = self._builder()
@@ -632,11 +638,9 @@ class bistr:
         Like :meth:`str.lstrip`, removes leading characters (whitespace by default).
         """
 
-        should_strip = self._stripper(chars)
-
         length = len(self)
         pre = 0
-        while pre < length and should_strip(self.modified[pre]):
+        while pre < length and self._should_strip(self.modified[pre], chars):
             pre += 1
 
         builder = self._builder()
@@ -649,11 +653,9 @@ class bistr:
         Like :meth:`str.rstrip`, removes trailing characters (whitespace by default).
         """
 
-        should_strip = self._stripper(chars)
-
         length = len(self)
         post = length
-        while post > 0 and should_strip(self.modified[post - 1]):
+        while post > 0 and self._should_strip(self.modified[post - 1], chars):
             post -= 1
 
         builder = self._builder()
@@ -676,4 +678,5 @@ class bistr:
         return normalize(self, form)
 
 
-String = Union[str, 'bistr']
+if TYPE_CHECKING:
+    from ._builder import BistrBuilder

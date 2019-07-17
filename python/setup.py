@@ -16,6 +16,12 @@ setup(
     packages=[
         'bistring',
     ],
+    package_data={
+        'bistring': [
+            'py.typed',
+        ],
+    },
+    zip_safe=False,
     test_suite='tests',
     setup_requires=[
         'pytest-runner',
@@ -25,6 +31,7 @@ setup(
     ],
     extras_require={
         'test': [
+            'mypy',
             'pytest',
             'regex',
         ],
