@@ -12,8 +12,45 @@ from ._typing import Bounds, Regex, Replacement
 
 
 class BistrBuilder:
-    """
+    r"""
     Bidirectionally transformed string builer.
+
+    A `BistrBuilder` builds a transformed version of a source string iteratively.  Each builder has an immutable
+    original string, a current string, and the in-progress modified string, with alignments between each.  For example::
+
+        original: |The| |quick,| |brown| |🦊| |jumps| |over| |the| |lazy| |🐶|
+                  |   | |      | |     | |  \ \     \ \    \ \   \ \    \ \   \
+        current:  |The| |quick,| |brown| |fox| |jumps| |over| |the| |lazy| |dog|
+                  |   | |      / /     /
+        modified: |the| |quick| |brown| ...
+
+    The modified string is built in pieces by calling :meth:`replace` to change `n` characters of the current string
+    into new ones in the modified string.  Convenience methods like :meth:`skip`, :meth:`insert`, and :meth:`discard`
+    are implemented on top of this basic primitive.
+
+        >>> b = BistrBuilder('The quick, brown 🦊 jumps over the lazy 🐶')
+        >>> b.skip(17)
+        >>> b.peek(1)
+        '🦊'
+        >>> b.replace(1, 'fox')
+        >>> b.skip(21)
+        >>> b.peek(1)
+        '🐶'
+        >>> b.replace(1, 'dog')
+        >>> b.is_complete
+        True
+        >>> b.rewind()
+        >>> b.peek(3)
+        'The'
+        >>> b.replace(3, 'the')
+        >>> b.skip(1)
+        >>> b.peek(6)
+        'quick,'
+        >>> b.replace(6, 'quick')
+        >>> b.skip_rest()
+        >>> s = b.build()
+        >>> s.modified
+        'the quick brown fox jumps over the lazy dog'
     """
 
     _original: bistr
@@ -23,6 +60,11 @@ class BistrBuilder:
     _mpos: int
 
     def __init__(self, original: String):
+        """
+        :param original:
+            The string to start from.
+        """
+
         self._original = bistr(original)
         self._modified = []
         self._alignment = [(0, 0)]
@@ -74,13 +116,14 @@ class BistrBuilder:
     @property
     def is_complete(self) -> bool:
         """
-        Whether we've completely processed the string.
+        Whether we've completely processed the string.  In other words, whether the modified string aligns with the end
+        of the current string.
         """
         return self.remaining == 0
 
     def peek(self, n: int) -> str:
         """
-        Peek at the next n characters of the original string.
+        Peek at the next `n` characters of the original string.
         """
         return self.current[self._opos:self._opos+n]
 
@@ -92,7 +135,7 @@ class BistrBuilder:
 
     def skip(self, n: int) -> None:
         """
-        Skip the next n characters, copying them unchanged.
+        Skip the next `n` characters, copying them unchanged.
         """
         if n > 0:
             self._modified.append(self.peek(n))
@@ -125,7 +168,7 @@ class BistrBuilder:
 
     def replace(self, n: int, repl: str) -> None:
         """
-        Replace the next n characters with a new string.
+        Replace the next `n` characters with a new string.
         """
         if len(repl) > 0:
             self._modified.append(repl)
@@ -133,8 +176,7 @@ class BistrBuilder:
 
     def append(self, bs: bistr) -> None:
         """
-        Append a bistr.  The original value of the bistr must match the current
-        string being processed.
+        Append a bistr.  The original value of the bistr must match the current string being processed.
         """
         if bs.original != self.peek(len(bs.original)):
             raise ValueError("bistr doesn't match the current string")
@@ -156,7 +198,13 @@ class BistrBuilder:
     def skip_match(self, regex: Regex) -> bool:
         """
         Skip a substring matching a regex, copying it unchanged.
+
+        :param regex:
+            The (possibly compiled) regular expression to match.
+        :returns:
+            Whether a match was found.
         """
+
         match = self._match(regex)
         if match:
             self.skip(match.end() - match.start())
@@ -167,7 +215,13 @@ class BistrBuilder:
     def discard_match(self, regex: Regex) -> bool:
         """
         Discard a substring that matches a regex.
+
+        :param regex:
+            The (possibly compiled) regular expression to match.
+        :returns:
+            Whether a match was found.
         """
+
         match = self._match(regex)
         if match:
             self.discard(match.end() - match.start())
@@ -178,7 +232,16 @@ class BistrBuilder:
     def replace_match(self, regex: Regex, repl: Replacement) -> bool:
         """
         Replace a substring that matches a regex.
+
+        :param regex:
+            The (possibly compiled) regular expression to match.
+        :param repl:
+            The replacement to use.  Can be a string, which is interpreted as in :meth:`re.Match.expand`, or a
+            `callable`, which will receive each match and return the replacement string.
+        :returns:
+            Whether a match was found.
         """
+
         match = self._match(regex)
         if match:
             self.replace(match.end() - match.start(), expand_template(match, repl))
@@ -189,7 +252,15 @@ class BistrBuilder:
     def replace_next(self, regex: Regex, repl: Replacement) -> bool:
         """
         Replace the next occurence of a regex.
+
+        :param regex:
+            The (possibly compiled) regular expression to match.
+        :param repl:
+            The replacement to use.
+        :returns:
+            Whether a match was found.
         """
+
         match = self._search(regex)
         if match:
             self.skip(match.start() - self._opos)
@@ -201,7 +272,13 @@ class BistrBuilder:
     def replace_all(self, regex: Regex, repl: Replacement) -> None:
         """
         Replace all occurences of a regex.
+
+        :param regex:
+            The (possibly compiled) regular expression to match.
+        :param repl:
+            The replacement to use.
         """
+
         for match in self._finditer(regex):
             self.skip(match.start() - self._opos)
             self.replace(match.end() - match.start(), expand_template(match, repl))
@@ -209,14 +286,26 @@ class BistrBuilder:
 
     def build(self) -> bistr:
         """
-        Build the bistr.
+        Build the `bistr`.
+
+        :returns:
+            A `bistr` from the original string to the new modified string.
+        :raises:
+            :class:`ValueError` if the modified string is not completely built yet.
         """
+
+        if not self.is_complete:
+            raise ValueError(f'The string is not completely built yet ({self.remaining} characters remaining)')
+
         alignment = self._original.alignment.compose(self.alignment)
         return bistr(self.original, self.modified, alignment)
 
     def rewind(self) -> None:
         """
         Reset this builder to apply another transformation.
+
+        :raises:
+            :class:`ValueError` if the modified string is not completely built yet.
         """
         self._original = self.build()
         self._modified = []
