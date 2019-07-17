@@ -278,7 +278,7 @@ class Tokenizer(ABC):
 
 
 class RegexTokenizer(Tokenizer):
-    """
+    r"""
     Breaks text into tokens based on a regex.
 
         >>> tokenizer = RegexTokenizer(r'\w+')
@@ -306,7 +306,7 @@ class RegexTokenizer(Tokenizer):
 
 
 class SplittingTokenizer(Tokenizer):
-    """
+    r"""
     Splits text into tokens based on a regex.
 
         >>> tokenizer = SplittingTokenizer(r'\s+')
