@@ -47,6 +47,20 @@ class Token:
     The end position of the token.
     """
 
+    def __init__(self, text: String, start: int, end: int):
+        """
+        :param text:
+            The text of this token.
+        :param start:
+            The starting index of this token.
+        :param end:
+            The ending index of this token.
+        """
+
+        super().__setattr__('text', bistr(text))
+        super().__setattr__('start', start)
+        super().__setattr__('end', end)
+
     @property
     def original(self) -> str:
         """
@@ -62,9 +76,16 @@ class Token:
         return self.text.modified
 
     @classmethod
-    def slice(cls, text: bistr, start: int, end: int) -> Token:
+    def slice(cls, text: String, start: int, end: int) -> Token:
         """
         Create a Token from a slice of a bistr.
+
+        :param text:
+            The (bi)string to slice.
+        :param start:
+            The starting index of the token.
+        :param end:
+            The ending index of the token.
         """
         return cls(text[start:end], start, end)
 
@@ -95,7 +116,10 @@ class Tokenization:
 
     def __init__(self, text: bistr, tokens: Iterable[Token]):
         """
-        Create a Tokenization.
+        :param text:
+            The text from which the tokens have been extracted.
+        :param tokens:
+            The tokens extracted from the text.
         """
         tokens = tuple(tokens)
 
@@ -256,9 +280,21 @@ class Tokenizer(ABC):
 class RegexTokenizer(Tokenizer):
     """
     Breaks text into tokens based on a regex.
+
+        >>> tokenizer = RegexTokenizer(r'\w+')
+        >>> tokens = tokenizer.tokenize('the quick brown fox jumps over the lazy dog')
+        >>> tokens[0]
+        Token(bistr('the'), start=0, end=3)
+        >>> tokens[1]
+        Token(bistr('quick'), start=4, end=9)
     """
 
     def __init__(self, regex: Regex):
+        """
+        :param regex:
+            A (possibly compiled) regular expression that matches tokens to extract.
+        """
+
         self._pattern = compile_regex(regex)
 
     def tokenize(self, text: String) -> Tokenization:
@@ -272,9 +308,21 @@ class RegexTokenizer(Tokenizer):
 class SplittingTokenizer(Tokenizer):
     """
     Splits text into tokens based on a regex.
+
+        >>> tokenizer = SplittingTokenizer(r'\s+')
+        >>> tokens = tokenizer.tokenize('the quick brown fox jumps over the lazy dog')
+        >>> tokens[0]
+        Token(bistr('the'), start=0, end=3)
+        >>> tokens[1]
+        Token(bistr('quick'), start=4, end=9)
     """
 
     def __init__(self, regex: Regex):
+        """
+        :param regex:
+            A (possibly compiled) regular expression that matches the regions between tokens.
+        """
+
         self._pattern = compile_regex(regex)
 
     def tokenize(self, text: String) -> Tokenization:
@@ -345,18 +393,42 @@ class _IcuTokenizer(Tokenizer):
 class CharacterTokenizer(_IcuTokenizer):
     """
     Splits text into user-perceived characters/grapheme clusters.
+
+        >>> tokenizer = CharacterTokenizer('th_TH')
+        >>> tokens = tokenizer.tokenize('กำนัล')
+        >>> tokens[0]
+        Token(bistr('กำ'), start=0, end=2)
+        >>> tokens[1]
+        Token(bistr('นั'), start=2, end=4)
+        >>> tokens[2]
+        Token(bistr('ล'), start=4, end=5)
     """
 
     def __init__(self, locale: str):
+        """
+        :param locale:
+            The name of the locale to use for computing user-perceived character boundaries.
+        """
         super().__init__(locale, icu.BreakIterator.createCharacterInstance)
 
 
 class WordTokenizer(_IcuTokenizer):
     """
     Splits text into words based on Unicode rules.
+
+        >>> tokenizer = WordTokenizer('en_US')
+        >>> tokens = tokenizer.tokenize('the quick brown fox jumps over the lazy dog')
+        >>> tokens[0]
+        Token(bistr('the'), start=0, end=3)
+        >>> tokens[1]
+        Token(bistr('quick'), start=4, end=9)
     """
 
     def __init__(self, locale: str):
+        """
+        :param locale:
+            The name of the locale to use for computing word boundaries.
+        """
         super().__init__(locale, icu.BreakIterator.createWordInstance)
 
     def _check_token(self, tag: int) -> bool:
@@ -366,7 +438,20 @@ class WordTokenizer(_IcuTokenizer):
 class SentenceTokenizer(_IcuTokenizer):
     """
     Splits text into sentences based on Unicode rules.
+
+        >>> tokenizer = SentenceTokenizer('en_US')
+        >>> tokens = tokenizer.tokenize(
+        ...     'Word, sentence, etc. boundaries are hard. Luckily, Unicode can help.'
+        ... )
+        >>> tokens[0]
+        Token(bistr('Word, sentence, etc. boundaries are hard. '), start=0, end=42)
+        >>> tokens[1]
+        Token(bistr('Luckily, Unicode can help.'), start=42, end=68)
     """
 
     def __init__(self, locale: str):
+        """
+        :param locale:
+            The name of the locale to use for computing sentence boundaries.
+        """
         super().__init__(locale, icu.BreakIterator.createSentenceInstance)
