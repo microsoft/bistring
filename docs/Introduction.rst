@@ -25,8 +25,8 @@ If the assistant uses `bistring` though, it's easy for it to match that with the
 
     >>> from bistring import bistr
     >>> query = bistr(
-    ... 'send jane a text that says, '
-    ... '"Hey! How are you? Haven\'t seen you in a while, what\'s up 😀"'
+    ...     'send jane a text that says, '
+    ...     '"Hey! How are you? Haven\'t seen you in a while, what\'s up 😀"'
     ... )
 
     >>> # Get rid of upper-/lower-case distinctions
