@@ -25,10 +25,11 @@ steps:
     CFLAGS="-std=c++11" pip install pyicu
     pip install -e './python[test]'
     pip install -r ./docs/requirements.txt
+    pip install pytest-azurepipelines
   displayName: 'Install dependencies'
 
 - script: |
-    pip install pytest-azurepipelines
+    (cd ./python && mypy -p bistring)
     pytest
     make -C docs doctest
   displayName: 'pytest'

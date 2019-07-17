@@ -25,6 +25,7 @@ setup(
     ],
     extras_require={
         'test': [
+            'mypy',
             'pytest',
             'regex',
         ],
