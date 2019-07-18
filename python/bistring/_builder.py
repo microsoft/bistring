@@ -16,7 +16,9 @@ class BistrBuilder:
     Bidirectionally transformed string builer.
 
     A `BistrBuilder` builds a transformed version of a source string iteratively.  Each builder has an immutable
-    original string, a current string, and the in-progress modified string, with alignments between each.  For example::
+    original string, a current string, and the in-progress modified string, with alignments between each.  For example:
+
+    .. code-block:: text
 
         original: |The| |quick,| |brown| |🦊| |jumps| |over| |the| |lazy| |🐶|
                   |   | |      | |     | |  \ \     \ \    \ \   \ \    \ \   \
