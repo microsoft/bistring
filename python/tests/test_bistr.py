@@ -65,6 +65,10 @@ def test_infer():
     assert bs[40:43].original == '🐶'
     assert bs[40:43].modified == 'dog'
 
+    bs = bistr.infer('Z̴̡̪̫̖̥̔̿̃̈̏̎͠͝á̸̪̠̖̻̬̖̪̞͙͇̮̠͎̆͋́̐͌̒͆̓l̶͉̭̳̤̬̮̩͎̟̯̜͇̥̠̘͑͐̌͂̄́̀̂̌̈͛̊̄̚͜ģ̸̬̼̞̙͇͕͎̌̾̒̐̿̎̆̿̌̃̏̌́̾̈͘͜o̶̢̭͕͔̩͐ ̴̡̡̜̥̗͔̘̦͉̣̲͚͙̐̈́t̵͈̰̉̀͒̎̈̿̔̄̽͑͝͠ẹ̵̫̲̫̄͜͜x̵͕̳͈̝̤̭̼̼̻͓̿̌̽̂̆̀̀̍̒͐́̈̀̚͝t̸̡̨̥̺̣̟͎̝̬̘̪͔͆́̄̅̚', 'Zalgo text')
+    for i, c in enumerate(bs):
+        assert bs[i:i+1].original.startswith(c)
+
 
 def test_concat():
     bs = bistr('  ', '')

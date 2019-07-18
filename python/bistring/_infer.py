@@ -9,12 +9,28 @@ import unicodedata
 
 from ._alignment import Alignment
 from ._bistr import bistr
+from ._token import CharacterTokenizer
 
 
 @dataclass(frozen=True)
 class AugmentedChar:
     """
-    A single character (code point) augmented with extra information.
+    A single character (grapheme cluster) augmented with extra information.
+    """
+
+    top_category: str
+    """
+    The top-level Unicode category of the char (L, P, Z, etc.).
+    """
+
+    category: str
+    """
+    The specific Unicode category of the char (Lu, Po, Zs, etc.).
+    """
+
+    root: str
+    """
+    The root code point of the grapheme cluster.
     """
 
     folded: str
@@ -32,16 +48,6 @@ class AugmentedChar:
     The original form of the char.
     """
 
-    top_category: str
-    """
-    The top-level Unicode category of the char (L, P, Z, etc.).
-    """
-
-    category: str
-    """
-    The specific Unicode category of the char (Lu, Po, Zs, etc.).
-    """
-
     @classmethod
     def cost_fn(cls, a: Optional[AugmentedChar], b: Optional[AugmentedChar]) -> int:
         """
@@ -49,27 +55,20 @@ class AugmentedChar:
         """
 
         if a is None or b is None:
-            if a:
-                top_category = a.top_category
-            elif b:
-                top_category = b.top_category
-            else:
-                assert False, 'Unreachable'
-
-            if top_category == 'M':
-                # Less penalty for combining marks
-                return 1
-            else:
-                # cost(insert) + cost(delete) (3 + 3) should be more than cost(substitute) (5)
-                return 3
+            # cost(insert) + cost(delete) (4 + 4) should be more than cost(substitute) (6)
+            return 4
 
         result = 0
+        result += int(a.top_category != b.top_category)
+        result += int(a.category != b.category)
+        result += int(a.root != b.root)
         result += int(a.folded != b.folded)
         result += int(a.normalized != b.normalized)
         result += int(a.original != b.original)
-        result += int(a.top_category != b.top_category)
-        result += int(a.category != b.category)
         return result
+
+
+TOKENIZER = CharacterTokenizer('root')
 
 
 @dataclass(frozen=True)
@@ -97,21 +96,27 @@ class AugmentedString:
     def augment(cls, original: str) -> AugmentedString:
         normalized = bistr(original).normalize('NFKD')
         folded = bistr(normalized.modified).casefold()
+        glyphs = TOKENIZER.tokenize(folded)
 
         chars = []
-        for i, fold_c in enumerate(folded):
-            norm_slice = folded.alignment.original_slice(i, i + 1)
+        for glyph in glyphs:
+            fold_c = glyph.text.modified
+            root = fold_c[0]
+
+            norm_slice = folded.alignment.original_slice(glyph.start, glyph.end)
             norm_c = folded.original[norm_slice]
 
             orig_slice = normalized.alignment.original_slice(norm_slice)
             orig_c = normalized.original[orig_slice]
 
-            cat = unicodedata.category(fold_c)
+            cat = unicodedata.category(root)
             top_cat = cat[0]
 
-            chars.append(AugmentedChar(fold_c, norm_c, orig_c, top_cat, cat))
+            chars.append(AugmentedChar(top_cat, cat, root, fold_c, norm_c, orig_c))
 
-        alignment = normalized.alignment.compose(folded.alignment)
+        alignment = normalized.alignment
+        alignment = alignment.compose(folded.alignment)
+        alignment = alignment.compose(glyphs.alignment)
         return cls(original, chars, alignment)
 
 
