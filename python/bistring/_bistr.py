@@ -6,7 +6,8 @@ from __future__ import annotations
 __all__ = ['bistr']
 
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Match, Optional, Tuple, Union, overload, TYPE_CHECKING
+from typing import Any, Callable, Iterable, Iterator, List, Match, Optional, Tuple, Union, overload, TYPE_CHECKING
+import unicodedata
 
 from ._alignment import Alignment
 from ._regex import compile_regex, expand_template
@@ -118,6 +119,22 @@ class bistr:
             >>> print(s[5:6])
             ⮎'r'⮌
 
+        `infer()` tries to be intelligent about certain aspects of Unicode, which enables it to guess good alignments
+        between strings that have been case-mapped, normalized, etc.:
+
+            >>> s = bistr.infer(
+            ...     '🅃🄷🄴 🅀🅄🄸🄲🄺, 🄱🅁🄾🅆🄽 🦊 🄹🅄🄼🄿🅂 🄾🅅🄴🅁 🅃🄷🄴 🄻🄰🅉🅈 🐶',
+            ...     'the quick brown fox jumps over the lazy dog',
+            ... )
+            >>> print(s[0:3])
+            ('🅃🄷🄴' ⇋ 'the')
+            >>> print(s[4:9])
+            ('🅀🅄🄸🄲🄺' ⇋ 'quick')
+            >>> print(s[10:15])
+            ('🄱🅁🄾🅆🄽' ⇋ 'brown')
+            >>> print(s[16:19])
+            ('🦊' ⇋ 'fox')
+
         Warning: this operation has time complexity ``O(N*M)``, where `N` and `M` are the lengths of the original and
         modified strings, and so should only be used for relatively short strings.
 
@@ -131,7 +148,11 @@ class bistr:
             A `bistr` with the inferred alignment.
         """
 
-        return cls(original, modified, Alignment.infer(original, modified, cost_fn))
+        if cost_fn:
+            return cls(original, modified, Alignment.infer(original, modified, cost_fn))
+        else:
+            from ._infer import heuristic_infer
+            return heuristic_infer(original, modified)
 
     def __str__(self) -> str:
         if self.original == self.modified:
@@ -181,6 +202,9 @@ class bistr:
             )
         else:
             return NotImplemented
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.modified)
 
     @overload
     def __getitem__(self, index: int) -> str: ...
