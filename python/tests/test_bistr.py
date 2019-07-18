@@ -39,6 +39,32 @@ def test_infer():
 
     assert bs.inverse() == bistr.infer('colour', 'color')
 
+    bs = bistr.infer(
+        '🅃🄷🄴 🅀🅄🄸🄲🄺, 🄱🅁🄾🅆🄽 🦊 🄹🅄🄼🄿🅂 🄾🅅🄴🅁 🅃🄷🄴 🄻🄰🅉🅈 🐶',
+        'the quick brown fox jumps over the lazy dog',
+    )
+    assert bs[0:3] == bistr('🅃🄷🄴', 'the', Alignment.identity(3))
+    assert bs[4:9] == bistr('🅀🅄🄸🄲🄺', 'quick', Alignment.identity(5))
+    assert bs[10:15] == bistr('🄱🅁🄾🅆🄽', 'brown', Alignment.identity(5))
+    assert bs[16:19].original == '🦊'
+    assert bs[16:19].modified == 'fox'
+    assert bs[20:25] == bistr('🄹🅄🄼🄿🅂', 'jumps', Alignment.identity(5))
+    assert bs[40:43].original == '🐶'
+    assert bs[40:43].modified == 'dog'
+
+    bs = bistr.infer(
+        'Ṫḧë qüïċḳ, ḅṛöẅṅ 🦊 jüṁṗṡ öṿëṛ ẗḧë ḷäżÿ 🐶',
+        'the quick brown fox jumps over the lazy dog',
+    )
+    assert bs[0:3] == bistr('Ṫḧë', 'the', Alignment.identity(3))
+    assert bs[4:9] == bistr('qüïċḳ', 'quick', Alignment.identity(5))
+    assert bs[10:15] == bistr('ḅṛöẅṅ', 'brown', Alignment.identity(5))
+    assert bs[16:19].original == '🦊'
+    assert bs[16:19].modified == 'fox'
+    assert bs[20:25] == bistr('jüṁṗṡ', 'jumps', Alignment.identity(5))
+    assert bs[40:43].original == '🐶'
+    assert bs[40:43].modified == 'dog'
+
 
 def test_concat():
     bs = bistr('  ', '')
