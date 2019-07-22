@@ -1,8 +1,3 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
 trigger:
 - master
 
@@ -26,8 +21,15 @@ steps:
     pip install -e './python[test]'
     pip install -r ./docs/requirements.txt
     pip install pytest-azurepipelines
+    npm --prefix ./js install
   displayName: 'Install dependencies'
 
 - script: |
     make check
   displayName: 'Run tests'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: JUnit
+    testResultsFiles: '**/junit.xml'
