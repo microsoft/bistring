@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import icu
 import threading
-from typing import Callable, Iterable, Iterator, Sequence, Union, overload
+from typing import Callable, Iterable, Iterator, Optional, Sequence, Union, overload
 
 from ._alignment import Alignment
 from ._bistr import bistr, String
@@ -360,9 +360,11 @@ class _IcuTokenizer(Tokenizer):
         self._break_iterator()
 
     def _break_iterator(self) -> icu.BreakIterator:
-        if not hasattr(self._local, 'bi'):
-            self._local.bi = self._constructor(self._locale)
-        return self._local.bi
+        bi: Optional[icu.BreakIterator] = getattr(self._local, 'bi', None)
+        if bi is None:
+            bi = self._constructor(self._locale)
+            self._local.bi = bi
+        return bi
 
     def tokenize(self, text: String) -> Tokenization:
         text = bistr(text)

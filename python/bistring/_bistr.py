@@ -96,7 +96,7 @@ class bistr:
         elif alignment.modified_bounds() != (0, len(modified)):
             raise ValueError('Alignment incompatible with modified string')
 
-        result = object.__new__(cls)
+        result: bistr = object.__new__(cls)
         object.__setattr__(result, 'original', original)
         object.__setattr__(result, 'modified', modified)
         object.__setattr__(result, 'alignment', alignment)

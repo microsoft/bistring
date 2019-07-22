@@ -103,7 +103,7 @@ class Alignment:
 
     @classmethod
     def _create(cls, original: List[int], modified: List[int]) -> Alignment:
-        result = super().__new__(cls)
+        result: Alignment = super().__new__(cls)
         result._original = original
         result._modified = modified
         return result
@@ -146,7 +146,7 @@ class Alignment:
                     raise ValueError('slice with unspecified bounds')
                 return arg.start, arg.stop
             elif isinstance(arg, tuple):
-                return cast(Bounds, arg)
+                return arg
             else:
                 return 0, arg
         elif l == 2:
