@@ -114,19 +114,21 @@ class Tokenization:
 
     _tokens: Sequence[Token]
 
-    def __init__(self, text: bistr, tokens: Iterable[Token]):
+    def __init__(self, text: String, tokens: Iterable[Token]):
         """
         :param text:
             The text from which the tokens have been extracted.
         :param tokens:
             The tokens extracted from the text.
         """
+        text = bistr(text)
         tokens = tuple(tokens)
 
-        alignment = []
+        alignment = [(0, 0)]
         for i, token in enumerate(tokens):
             alignment.append((token.start, i))
             alignment.append((token.end, i + 1))
+        alignment.append((len(text), len(tokens)))
 
         super().__setattr__('text', text)
         super().__setattr__('_tokens', tokens)
