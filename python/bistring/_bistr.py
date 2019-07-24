@@ -233,10 +233,12 @@ class bistr:
             if stride != 1:
                 raise ValueError('Non-unit strides not supported')
 
-            modified = self.modified[start:stop]
-            original = self.original[self.alignment.original_slice(start, stop)]
             alignment = self.alignment.slice_by_modified(start, stop)
-            alignment = alignment.shift(-alignment[0][0], -alignment[0][1])
+            modified = self.modified[start:stop]
+            original = self.original[alignment.original_slice()]
+
+            o0, m0 = alignment[0]
+            alignment = alignment.shift(-o0, -m0)
 
             return bistr(original, modified, alignment)
         else:
