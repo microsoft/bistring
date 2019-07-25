@@ -65,18 +65,19 @@ def test_canonicalization():
 
 def _test_composition(first, second):
     composed = first.compose(second)
-    original_range = composed.original_range()
-    modified_range = composed.modified_range()
 
-    assert original_range == first.original_range()
-    assert modified_range == second.modified_range()
+    of, ol = composed.original_bounds()
+    mf, ml = composed.modified_bounds()
 
-    for i in original_range:
-        for j in original_range[i:]:
+    assert (of, ol) == first.original_bounds()
+    assert (mf, ml) == second.modified_bounds()
+
+    for i in range(of, ol + 1):
+        for j in range(i, ol + 1):
             assert composed.modified_bounds(i, j) == second.modified_bounds(first.modified_bounds(i, j))
 
-    for i in modified_range:
-        for j in modified_range[i:]:
+    for i in range(mf, ml + 1):
+        for j in range(i, ml + 1):
             assert composed.original_bounds(i, j) == first.original_bounds(second.original_bounds(i, j))
 
 
