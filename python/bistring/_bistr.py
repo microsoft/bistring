@@ -571,6 +571,51 @@ class bistr:
 
         return builder.build()
 
+    def swapcase(self, locale: Optional[str] = None) -> bistr:
+        """
+        Swap the case of every letter in this string.  Unless you specify the `locale` parameter, the current system
+        locale will be used.
+
+            >>> bistr('hello WORLD').swapcase()
+            bistr('hello WORLD', 'HELLO world', Alignment.identity(11))
+
+        Some Unicode characters, such as title-case ligatures and digraphs, don't have a case-swapped equivalent:
+
+            >>> bistr('ǈepòta').swapcase('hr_HR')
+            bistr('ǈepòta', 'ǈEPÒTA', Alignment.identity(6))
+
+        In these cases, compatibilty normalization may help:
+
+            >>> s = bistr('ǈepòta')
+            >>> s = s.normalize('NFKC')
+            >>> s = s.swapcase('hr_HR')
+            >>> print(s)
+            ('ǈepòta' ⇋ 'lJEPÒTA')
+        """
+
+        builder = self._builder()
+
+        lower = bistr(self.modified).lower(locale)
+        upper = bistr(self.modified).upper(locale)
+
+        while not builder.is_complete:
+            i = builder.position
+            c = self[i]
+            cat = unicodedata.category(c)
+            if cat == 'Ll':
+                repl = upper
+            elif cat == 'Lu':
+                repl = lower
+            else:
+                builder.skip(1)
+                continue
+
+            chunk = repl[repl.alignment.modified_slice(i, i + 1)]
+            builder.append(chunk)
+
+        return builder.build()
+
+
     def expandtabs(self, tabsize: int = 8) -> bistr:
         """
         Like :meth:`str.expandtabs`, replaces tab (``\\t``) characters with spaces to align on multiples of `tabsize`.
