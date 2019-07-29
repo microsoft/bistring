@@ -266,6 +266,24 @@ def test_capitalize():
     assert bs.alignment == Alignment.identity(2)
 
 
+def test_swapcase():
+    bs = bistr('hello WORLD').swapcase('en_US')
+    assert bs.original == 'hello WORLD'
+    assert bs.modified == 'HELLO world'
+    assert bs.alignment == Alignment.identity(11)
+
+    # Ligatures/digraphs in title case don't have a swapped form
+    bs = bistr('ǈepòta').swapcase('hr_HR')
+    assert bs.original == 'ǈepòta'
+    assert bs.modified == 'ǈEPÒTA'
+    assert bs.alignment == Alignment.identity(6)
+
+    bs = bistr('ǈepòta').normalize('NFKC').swapcase('hr_HR')
+    assert bs.original == 'ǈepòta'
+    assert bs.modified == 'lJEPÒTA'
+    assert bs[0:2] == bistr('ǈ', 'lJ')
+
+
 def test_normalize():
     # é is composed but ö has a combining diaeresis
     bs = bistr('H\u00E9llo\u0308')

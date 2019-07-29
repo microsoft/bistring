@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-from bistring import bistr, BistrBuilder
+from bistring import bistr, Alignment, BistrBuilder
 
 
 def test_chunk_words():
@@ -113,3 +113,14 @@ def test_replace_backreference():
     bs = builder.build()
     assert bs.original == "it doesn't work and stuff doesn't get replaced"
     assert bs.modified == 'it works and stuff gets replaced'
+
+
+def test_append():
+    builder = BistrBuilder('hello WORLD')
+    builder.append(bistr(builder.peek(5)).upper('en_US'))
+    builder.skip(1)
+    builder.append(bistr(builder.peek(5)).lower('en_US'))
+
+    bs = builder.build()
+    assert bs[1:4] == bistr('ell', 'ELL', Alignment.identity(3))
+    assert bs[7:10] == bistr('ORL', 'orl', Alignment.identity(3))

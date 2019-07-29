@@ -48,6 +48,7 @@ setup(
     ],
     extras_require={
         'test': [
+            'lxml',
             'mypy',
             'pytest',
             'regex',
