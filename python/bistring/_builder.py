@@ -182,8 +182,9 @@ class BistrBuilder:
         """
         if bs.original != self.peek(len(bs.original)):
             raise ValueError("bistr doesn't match the current string")
-        for x, y in zip(bs.alignment, bs.alignment[1:]):
-            self._advance(y[0] - x[0], y[1] - x[1])
+        self._modified.append(bs.modified)
+        for (o0, m0), (o1, m1) in zip(bs.alignment, bs.alignment[1:]):
+            self._advance(o1 - o0, m1 - m0)
 
     def _match(self, regex: Regex) -> Optional[Match[str]]:
         pattern = compile_regex(regex)
