@@ -29,7 +29,5 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    (cd ./python && mypy -p bistring)
-    pytest
-    make -C docs doctest
-  displayName: 'pytest'
+    make check
+  displayName: 'Run tests'
