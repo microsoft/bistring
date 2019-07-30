@@ -45,28 +45,29 @@ def title(bs: bistr, locale: Optional[str]) -> bistr:
     return _edit(bs, icu.CaseMap.toTitle, locale)
 
 
+def _utf16_len(cp: int) -> int:
+    if cp >= 0x10000:
+        return 2
+    else:
+        return 1
+
+
 def _normalize(bs: bistr, normalizer: icu.Normalizer2) -> bistr:
     builder = BistrBuilder(bs)
     us = icu.UnicodeString(bs.modified)
-    while not builder.is_complete:
-        i = normalizer.spanQuickCheckYes(us)
-        builder.skip(us.countChar32(0, i))
-        if builder.is_complete:
-            break
-        us = us[i:]
+    i16, i32 = 0, 0
+    len16 = len(us)
 
-        i = 0
-        while i < len(us):
-            if us.charAt(i) & 0xFC00 == 0xD800:
-                i += 1
-            i += 1
-            if normalizer.hasBoundaryBefore(chr(us.char32At(i))):
-                break
+    while i16 < len16:
+        j16 = i16 + _utf16_len(ord(bs[i32]))
+        j32 = i32 + 1
+        while j16 < len16 and not normalizer.hasBoundaryBefore(chr(us.char32At(j16))):
+            j16 += _utf16_len(ord(bs[j32]))
+            j32 += 1
 
-        chunk = us[:i]
-        normalized = normalizer.normalize(chunk)
-        builder.replace(chunk.countChar32(), normalized)
-        us = us[i:]
+        chunk = normalizer.normalize(us[i16:j16])
+        builder.replace(j32 - i32, chunk)
+        i32, i16 = j32, j16
 
     return builder.build()
 
