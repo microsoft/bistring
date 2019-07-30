@@ -6,11 +6,10 @@ from __future__ import annotations
 __all__ = ['bistr']
 
 from itertools import islice
-from typing import Any, Callable, Iterable, Iterator, List, Match, Optional, Tuple, Union, overload, TYPE_CHECKING
+from typing import Any, Callable, Iterable, Iterator, List, Optional, Tuple, Union, overload, TYPE_CHECKING
 import unicodedata
 
 from ._alignment import Alignment
-from ._regex import compile_regex, expand_template
 from ._typing import Bounds, Index, Regex, Replacement
 
 

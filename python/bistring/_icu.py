@@ -48,7 +48,6 @@ def title(bs: bistr, locale: Optional[str]) -> bistr:
 def _normalize(bs: bistr, normalizer: icu.Normalizer2) -> bistr:
     builder = BistrBuilder(bs)
     us = icu.UnicodeString(bs.modified)
-    offset = 0
     while not builder.is_complete:
         i = normalizer.spanQuickCheckYes(us)
         builder.skip(us.countChar32(0, i))

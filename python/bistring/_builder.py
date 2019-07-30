@@ -3,7 +3,7 @@
 
 __all__ = ['BistrBuilder']
 
-from typing import Iterable, List, Match, Optional, Tuple
+from typing import Iterable, List, Match, Optional
 
 from ._alignment import Alignment
 from ._bistr import bistr, String
