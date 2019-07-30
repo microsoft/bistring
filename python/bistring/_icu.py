@@ -61,7 +61,7 @@ def _normalize(bs: bistr, normalizer: icu.Normalizer2) -> bistr:
     while i16 < len16:
         j16 = i16 + _utf16_len(ord(bs[i32]))
         j32 = i32 + 1
-        while j16 < len16 and not normalizer.hasBoundaryBefore(chr(us.char32At(j16))):
+        while j16 < len16 and not normalizer.hasBoundaryBefore(bs[j32]):
             j16 += _utf16_len(ord(bs[j32]))
             j32 += 1
 
