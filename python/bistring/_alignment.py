@@ -290,7 +290,7 @@ class Alignment:
         lcosts = cls._infer_costs(oleft, modified, cost_fn)
         rcosts = cls._infer_costs(oright[::-1], modified[::-1], cost_fn)[::-1]
 
-        mmid = min(range(len(modified)), key=lambda i: lcosts[i] + rcosts[i])
+        mmid = min(range(len(lcosts)), key=lambda i: lcosts[i] + rcosts[i])
         mleft = modified[:mmid]
         mright = modified[mmid:]
 

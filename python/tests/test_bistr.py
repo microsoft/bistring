@@ -39,6 +39,10 @@ def test_infer():
 
     assert bs.inverse() == bistr.infer('colour', 'color')
 
+    bs = bistr.infer("--Hello, world!--", "hello world")
+    assert bs[:5] == bistr("Hello", "hello", Alignment.identity(5))
+    assert bs[6:] == bistr("world")
+
     bs = bistr.infer(
         '🅃🄷🄴 🅀🅄🄸🄲🄺, 🄱🅁🄾🅆🄽 🦊 🄹🅄🄼🄿🅂 🄾🅅🄴🅁 🅃🄷🄴 🄻🄰🅉🅈 🐶',
         'the quick brown fox jumps over the lazy dog',

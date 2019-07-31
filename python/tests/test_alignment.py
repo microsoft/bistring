@@ -123,3 +123,12 @@ def test_infer():
     ])
 
     assert Alignment.infer('color', 'colour') == Alignment.infer('colour', 'color').inverse()
+
+    assert Alignment.infer("ab---", "ab") == Alignment([
+        (0, 0),
+        (1, 1),
+        (2, 2),
+        (3, 2),
+        (4, 2),
+        (5, 2),
+    ])
