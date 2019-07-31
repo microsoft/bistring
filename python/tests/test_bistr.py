@@ -98,14 +98,43 @@ def test_find_index():
 
     assert bs.find('dis') == -1
     assert bs.find('fun') == 3
+    assert bs.find('n') == 5
+    assert bs.find('n', 6) == 10
+
     assert bs.find_bounds('dis') == (-1, -1)
     assert bs.find_bounds('fun') == (3, 6)
+    assert bs.find_bounds('n') == (5, 6)
+    assert bs.find_bounds('n', 6) == (10, 11)
 
     pytest.raises(ValueError, bs.index, 'dis')
     pytest.raises(ValueError, bs.index_bounds, 'dis')
 
     assert bs.index('fun') == 3
     assert bs.index_bounds('fun') == (3, 6)
+    assert bs.index_bounds('n') == (5, 6)
+    assert bs.index_bounds('n', 6) == (10, 11)
+
+
+def test_rfind_rindex():
+    bs = bistr('dysfunction')
+
+    assert bs.rfind('dis') == -1
+    assert bs.rfind('fun') == 3
+    assert bs.rfind('n') == 10
+    assert bs.rfind('n', None, 9) == 5
+
+    assert bs.rfind_bounds('dis') == (-1, -1)
+    assert bs.rfind_bounds('fun') == (3, 6)
+    assert bs.rfind_bounds('n') == (10, 11)
+    assert bs.rfind_bounds('n', None, 9) == (5, 6)
+
+    pytest.raises(ValueError, bs.index, 'dis')
+    pytest.raises(ValueError, bs.index_bounds, 'dis')
+
+    assert bs.rindex('fun') == 3
+    assert bs.rindex_bounds('fun') == (3, 6)
+    assert bs.rindex_bounds('n') == (10, 11)
+    assert bs.rindex_bounds('n', None, 9) == (5, 6)
 
 
 def test_starts_ends_with():
