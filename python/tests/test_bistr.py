@@ -318,22 +318,20 @@ def test_swapcase():
 
 
 def test_normalize():
-    # é is composed but ö has a combining diaeresis
-    bs = bistr('H\u00E9llo\u0308')
-
-    bs = bs.normalize('NFC')
+    # "Héllö" -- é is composed but ö has a combining diaeresis
+    bs = bistr('H\u00E9llo\u0308').normalize('NFC')
     assert bs.original == 'H\u00E9llo\u0308'
     assert bs.modified == 'H\u00E9ll\u00F6'
     assert bs.modified == unicodedata.normalize('NFC', bs.original)
-    assert bs[4:5].original == 'o\u0308'
-    assert bs[4:5].modified == '\u00F6'
+    assert bs[1:2] == bistr('\u00E9')
+    assert bs[4:5] == bistr('o\u0308', '\u00F6')
 
-    bs = bs.normalize('NFD')
+    bs = bistr('H\u00E9llo\u0308').normalize('NFD')
     assert bs.original == 'H\u00E9llo\u0308'
     assert bs.modified == 'He\u0301llo\u0308'
     assert bs.modified == unicodedata.normalize('NFD', bs.original)
-    assert bs[1:3].original == '\u00E9'
-    assert bs[1:3].modified == 'e\u0301'
+    assert bs[1:3] == bistr('\u00E9', 'e\u0301')
+    assert bs[5:7] == bistr('o\u0308')
 
 
 def test_readme():

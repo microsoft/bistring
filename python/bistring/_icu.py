@@ -45,29 +45,22 @@ def title(bs: bistr, locale: Optional[str]) -> bistr:
     return _edit(bs, icu.CaseMap.toTitle, locale)
 
 
-def _utf16_len(cp: int) -> int:
-    if cp >= 0x10000:
-        return 2
-    else:
-        return 1
-
-
-def _normalize(bs: bistr, normalizer: icu.Normalizer2) -> bistr:
+def _normalize(normalizer: icu.Normalizer2, bs: bistr) -> bistr:
     builder = BistrBuilder(bs)
-    us = icu.UnicodeString(bs.modified)
-    i16, i32 = 0, 0
-    len16 = len(us)
+    current = builder.current
 
-    while i16 < len16:
-        j16 = i16 + _utf16_len(ord(bs[i32]))
-        j32 = i32 + 1
-        while j16 < len16 and not normalizer.hasBoundaryBefore(bs[j32]):
-            j16 += _utf16_len(ord(bs[j32]))
-            j32 += 1
+    while not builder.is_complete:
+        i = builder.position
+        j = i + 1
+        while j < len(current) and not normalizer.hasBoundaryBefore(current[j]):
+            j += 1
 
-        chunk = normalizer.normalize(us[i16:j16])
-        builder.replace(j32 - i32, chunk)
-        i32, i16 = j32, j16
+        chunk = current[i:j]
+        repl = normalizer.normalize(chunk)
+        if repl == chunk:
+            builder.skip(len(chunk))
+        else:
+            builder.replace(len(chunk), repl)
 
     return builder.build()
 
@@ -82,6 +75,6 @@ _NORMALIZERS = {
 def normalize(bs: bistr, form: str) -> bistr:
     factory = _NORMALIZERS.get(form)
     if factory:
-        return _normalize(bs, factory())
+        return _normalize(factory(), bs)
     else:
         raise ValueError('invalid normalization form')
