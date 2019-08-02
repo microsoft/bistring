@@ -1,0 +1,36 @@
+html {
+    background-color: lightgray;
+    height: 100%;
+}
+
+body {
+    box-sizing: border-box;
+    background-color: white;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px;
+    height: 100%;
+}
+
+#wrapper {
+    color: gray;
+}
+
+#code {
+    width: 100%;
+    margin-left: 32px;
+    max-width: 736px;
+}
+
+.label {
+    font-family: monospace;
+    color: gray;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+}
+
+.selectable {
+    white-space: pre;
+}

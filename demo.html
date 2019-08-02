@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>bistring live demo</title>
+        <link rel="stylesheet" href="demo.css" />
+    </head>
+    <body>
+        <p>
+            Try selecting some of the &ldquo;original&rdquo; or &ldquo;modified&rdquo; text below, or editing the code block!
+        </p>
+        <pre id="wrapper">
+import BiString, * as bistring from "bistring";
+
+let s = (function() {
+<textarea id="code" rows="8" spellcheck="false">
+let s = new BiString("𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊 𝖏𝖚𝖒𝖕𝖘 𝖔𝖛𝖊𝖗 𝖙𝖍𝖊 𝖑𝖆𝖟𝖞 🐶");
+s = s.normalize("NFKD");
+s = s.toLowerCase();
+s = s.replace("🦊", "fox");
+s = s.replace("🐶", "dog");
+s = s.replace(/[^\w\s]+/g, "");
+return s;</textarea>
+})();</pre>
+        <p>
+            <span class="label">s.original == "</span><span class="selectable" id="original"></span><span class="label">"</span>
+        </p>
+        <p>
+            <span class="label">s.modified == "</span><span class="selectable" id="modified"></span><span class="label">"</span>
+        </p>
+        <script src="bistring.js"></script>
+        <script src="demo.js"></script>
+    </body>
+</html>
