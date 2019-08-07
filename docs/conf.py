@@ -12,10 +12,9 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+
+import os
+from pathlib import Path
 
 
 # -- Project information -----------------------------------------------------
@@ -38,6 +37,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx_autodoc_typehints',
+    'sphinx_js',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -46,11 +46,22 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [
+    'node_modules',
+    '_build',
+    'Thumbs.db',
+    '.DS_Store',
+]
+
+
+# -- Intersphinx configuration -----------------------------------------------
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
 }
+
+
+# -- Autodoc configuration ---------------------------------------------------
 
 autoclass_content = 'both'
 
@@ -62,6 +73,20 @@ autodoc_default_options = {
 }
 
 autodoc_inherit_docstrings = False
+
+
+# -- sphinx-js configuration -------------------------------------------------
+
+npm_bin = str((Path(__file__).parent/'node_modules/.bin').resolve())
+os.environ["PATH"] = npm_bin + ":" + os.environ["PATH"]
+
+js_language = 'typescript'
+
+js_source_path = '../js/src'
+
+jsdoc_config_path = '../js/tsconfig.json'
+
+root_for_relative_js_paths = '..'
 
 
 # -- Options for HTML output -------------------------------------------------

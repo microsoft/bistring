@@ -1,0 +1,5 @@
+{
+    "dependencies": {
+        "typedoc": "^0.15.0"
+    }
+}

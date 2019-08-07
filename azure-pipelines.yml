@@ -22,6 +22,7 @@ steps:
     pip install -r ./docs/requirements.txt
     pip install pytest-azurepipelines
     npm --prefix ./js install
+    npm --prefix ./docs install
   displayName: 'Install dependencies'
 
 - script: |
