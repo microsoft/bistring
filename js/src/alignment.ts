@@ -307,7 +307,7 @@ export default class Alignment {
             result.push([i, j]);
             ({i, j} = matrix[i][j]);
         }
-        result.reverse()
+        result.reverse();
         return result;
     }
 

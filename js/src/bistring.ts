@@ -3,10 +3,10 @@
  * Licensed under the MIT license.
  */
 
-import Alignment, { BiIndex, Bounds } from "./alignment";
+import Alignment, { Bounds } from "./alignment";
 import BiStringBuilder from "./builder";
 import heuristicInfer from "./infer";
-import { MatchReplacer, Replacer, normalizeReplacer, cloneRegExp } from "./regex";
+import { Replacer, normalizeReplacer, cloneRegExp } from "./regex";
 import * as unicode from "./unicode";
 
 export type AnyString = string | BiString;
