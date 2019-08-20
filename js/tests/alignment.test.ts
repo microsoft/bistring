@@ -161,6 +161,6 @@ test("Alignment.infer", () => {
         [3, 2],
         [4, 2],
         [5, 2],
-    ])
+    ]);
     expect(a.equals(b)).toBe(true);
 });

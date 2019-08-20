@@ -1,7 +1,7 @@
 import { BiString, BiStringBuilder, Alignment } from "..";
 
 test("BiStringBuilder word chunks", () => {
-    const builder = new BiStringBuilder("  the quick  brown fox ")
+    const builder = new BiStringBuilder("  the quick  brown fox ");
     builder.discard(2);
     builder.replace(3, "the");
     builder.skip(1);
