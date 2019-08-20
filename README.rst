@@ -1,7 +1,7 @@
 bistring
 ========
 
-|Build status| |Documentation status| |PyPI version|
+|Build status| |Documentation status|
 
 The bistring library provides non-destructive versions of common string processing operations like normalization, case folding, and find/replace.
 Each bistring remembers the original string, and how its substrings map to substrings of the modified version.
@@ -22,6 +22,25 @@ For example:
     'the quick brown fox'
     >>> s.original                  # The original substring, before changes
     '𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊'
+
+
+Languages
+---------
+
+|PyPI version|
+
+bistring is available in multiple languages, currently `Python <python>`_ and `JavaScript/TypeScript <js>`_.
+Ports to other languages are planned for the near future.
+
+The code is structured similarly in each language to make it easy to share algorithms, tests, and fixes between them.
+The main differences come from trying to mirror the language's built-in string API.
+If you want to contribute a bug fix or a new feature, feel free to implement it in any one of the supported languages, and we'll try to port it to the rest of them.
+
+
+Demo
+----
+
+`Click here <https://microsoft.github.io/bistring/demo.html>`_ for a live demo of the bistring library in your browser.
 
 
 Contributing
