@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "esnext",
+        "esModuleInterop": true,
+        "removeComments": true,
+        "declaration": true,
+        "outDir": "dist",
+        "strict": true,
+        "sourceMap": true,
+        "declarationMap": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "typedocOptions": {
+        "mode": "modules",
+        "excludePrivate": true
+    }
+}

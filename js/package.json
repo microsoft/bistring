@@ -1,0 +1,56 @@
+{
+    "name": "bistring",
+    "version": "0.2.0",
+    "description": "Bidirectionally transformed strings",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/bistring.git"
+    },
+    "author": "msrmtle@microsoft.com",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/microsoft/bistring/issues"
+    },
+    "homepage": "https://github.com/microsoft/bistring#readme",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "module": "dist/index.mjs",
+    "browser": "dist/index.browser.js",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "generate": "./scripts/generate_unicode.py",
+        "prepare": "npm run build",
+        "build": "rollup -c",
+        "watch": "rollup -cw",
+        "test": "jest"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@babel/preset-env": "^7.5.5",
+        "@types/jest": "^24.0.18",
+        "core-js": "^3.2.1",
+        "jest": "^24.9.0",
+        "jest-junit": "^7.0.0",
+        "rollup": "^1.19.4",
+        "rollup-plugin-babel": "^4.3.3",
+        "rollup-plugin-commonjs": "^10.0.2",
+        "rollup-plugin-typescript2": "^0.22.1",
+        "ts-jest": "^24.0.2",
+        "typescript": "^3.5.3"
+    },
+    "jest": {
+        "reporters": [
+            "default",
+            "jest-junit"
+        ],
+        "testRegex": ".*\\.(spec|test)\\.[jt]s$",
+        "transform": {
+            ".*\\.ts?$": "ts-jest"
+        }
+    },
+    "jest-junit": {
+        "outputDirectory": "./test-results"
+    }
+}
