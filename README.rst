@@ -27,7 +27,7 @@ For example:
 Languages
 ---------
 
-|PyPI version|
+|PyPI version| |npm version|
 
 bistring is available in multiple languages, currently `Python <python>`_ and `JavaScript/TypeScript <js>`_.
 Ports to other languages are planned for the near future.
@@ -63,3 +63,5 @@ For more information see the `Code of Conduct FAQ <https://opensource.microsoft.
     :target: https://bistring.readthedocs.io/en/latest/?badge=latest
 .. |PyPI version| image:: https://badge.fury.io/py/bistring.svg
     :target: https://pypi.org/project/bistring/
+.. |npm version| image:: https://badge.fury.io/js/bistring.svg
+    :target: https://badge.fury.io/js/bistring

@@ -1,6 +1,8 @@
 bistring
 ========
 
+|PyPI version|
+
 The bistring library provides non-destructive versions of common string processing operations like normalization, case folding, and find/replace.
 Each bistring remembers the original string, and how its substrings map to substrings of the modified version.
 
@@ -22,3 +24,6 @@ For example:
     '𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊'
 
 This allows you to perform very aggressive text processing completely invisibly.
+
+.. |PyPI version| image:: https://badge.fury.io/py/bistring.svg
+    :target: https://pypi.org/project/bistring/
