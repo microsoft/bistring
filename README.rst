@@ -64,4 +64,4 @@ For more information see the `Code of Conduct FAQ <https://opensource.microsoft.
 .. |PyPI version| image:: https://badge.fury.io/py/bistring.svg
     :target: https://pypi.org/project/bistring/
 .. |npm version| image:: https://badge.fury.io/js/bistring.svg
-    :target: https://badge.fury.io/js/bistring
+    :target: https://www.npmjs.com/package/bistring

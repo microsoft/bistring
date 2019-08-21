@@ -1,7 +1,7 @@
 bistring
 ========
 
-[![npm version](https://badge.fury.io/js/bistring.svg)](https://badge.fury.io/js/bistring)
+[![npm version](https://badge.fury.io/js/bistring.svg)](https://www.npmjs.com/package/bistring)
 
 The bistring library provides non-destructive versions of common string processing operations like normalization, case folding, and find/replace.
 Each bistring remembers the original string, and how its substrings map to substrings of the modified version.
