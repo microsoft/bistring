@@ -70,7 +70,9 @@ type CostFn<T, U> = (o?: T, m?: U) => number;
  *     // [0, 2]
  */
 export default class Alignment {
+    /** The pairs of aligned indices in this alignment. */
     readonly values: readonly BiIndex[];
+    /** The number of entries in this alignment. */
     readonly length: number;
 
     /**
@@ -107,28 +109,38 @@ export default class Alignment {
         Object.freeze(this);
     }
 
-    static identity(bounds: Bounds): Alignment;
-    static identity(start: number, end?: number): Alignment;
+    /**
+     * Create an identity alignment of the given size, which maps all intervals to themselves.
+     *
+     * @param size
+     *         The size of the sequences to align.
+     * @returns
+     *         The identity alignment for the bounds [0, `size`].
+     */
+    static identity(size: number): Alignment;
 
     /**
-     * Create an identity alignment, which maps all intervals to themselves.  You can pass the size of the sequence:
+     * Create an identity alignment between the given bounds.
      *
-     * .. code-block:: ts
-     *
-     *     let a = Alignment.identity(5);
-     *
-     * or the start and end positions:
-     *
-     * .. code-block:: ts
-     *
-     *     a = Alignment.identity(1, 5);
-     *
-     * or the bounds in a single parameter:
-     *
-     * .. code-block:: ts
-     *
-     *     a = Alignment.identity([1, 5]);
+     * @param start
+     *         The first index to align.
+     * @param end
+     *         The last index to align.
+     * @returns
+     *         The identity alignment for the bounds [`start`, `end`].
      */
+    static identity(start: number, end: number): Alignment;
+
+    /**
+     * Create an identity alignment with the given bounds.
+     *
+     * @param bounds
+     *         The bounds of the alignment (e.g. ``[1, 5]``).
+     * @returns
+     *         The identity alignment for the given bounds.
+     */
+    static identity(bounds: Bounds): Alignment;
+
     static identity(start: number | Bounds, end?: number): Alignment {
         if (typeof(start) !== "number") {
             end = start[1];
@@ -400,9 +412,11 @@ export default class Alignment {
         return [this.values[first][1 - which], this.values[last][1 - which]];
     }
 
+    /**
+     * @returns
+     *         The bounds of the original sequence.
+     */
     originalBounds(): Bounds;
-    originalBounds(bounds: Bounds): Bounds;
-    originalBounds(start: number, end: number): Bounds;
 
     /**
      * Maps a subrange of the modified sequence to the original sequence.
@@ -414,13 +428,27 @@ export default class Alignment {
      * @returns
      *         The bounds of the corresponding span in the original sequence.
      */
+    originalBounds(start: number, end: number): Bounds;
+
+    /**
+     * Maps a subrange of the modified sequence to the original sequence.
+     *
+     * @param bounds
+     *         The bounds of the span in the modified sequence.
+     * @returns
+     *         The bounds of the corresponding span in the original sequence.
+     */
+    originalBounds(bounds: Bounds): Bounds;
+
     originalBounds(start?: number | Bounds, end?: number): Bounds {
         return this._bounds(1, start, end);
     }
 
+    /**
+     * @returns
+     *         The bounds of the modified sequence.
+     */
     modifiedBounds(): Bounds;
-    modifiedBounds(bounds: Bounds): Bounds;
-    modifiedBounds(start: number, end: number): Bounds;
 
     /**
      * Maps a subrange of the original sequence to the modified sequence.
@@ -432,6 +460,18 @@ export default class Alignment {
      * @returns
      *         The bounds of the corresponding span in the modified sequence.
      */
+    modifiedBounds(start: number, end: number): Bounds;
+
+    /**
+     * Maps a subrange of the original sequence to the modified sequence.
+     *
+     * @param bounds
+     *         The bounds of the span in the original sequence.
+     * @returns
+     *         The bounds of the corresponding span in the modified sequence.
+     */
+    modifiedBounds(bounds: Bounds): Bounds;
+
     modifiedBounds(start?: number | Bounds, end?: number): Bounds {
         return this._bounds(0, start, end);
     }
@@ -478,6 +518,18 @@ export default class Alignment {
      * @returns
      *         The requested slice of this alignment.
      */
+    sliceByOriginal(start: number, end: number): Alignment;
+
+    /**
+     * Slice this alignment by a span of the original sequence.
+     *
+     * @param bounds
+     *         The bounds of the span in the original sequence.
+     * @returns
+     *         The requested slice of this alignment.
+     */
+    sliceByOriginal(bounds: Bounds): Alignment;
+
     sliceByOriginal(start: number | Bounds, end?: number): Alignment {
         return this._sliceBy(0, start, end);
     }
@@ -492,6 +544,18 @@ export default class Alignment {
      * @returns
      *         The requested slice of this alignment.
      */
+    sliceByModified(start: number, end: number): Alignment;
+
+    /**
+     * Slice this alignment by a span of the modified sequence.
+     *
+     * @param bounds
+     *         The bounds of the span in the modified sequence.
+     * @returns
+     *         The requested slice of this alignment.
+     */
+    sliceByModified(bounds: Bounds): Alignment;
+
     sliceByModified(start: number | Bounds, end?: number): Alignment {
         return this._sliceBy(1, start, end);
     }

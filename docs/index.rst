@@ -5,16 +5,13 @@ The bistring library provides non-destructive versions of common string processi
 Each bistring remembers the original string, and how its substrings map to substrings of the modified version.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
+    :caption: Contents:
 
-   Introduction
-   FAQ
-   bistr
-   BistrBuilder
-   Alignment
-   Tokenization
-   Tokenizer
+    Introduction
+    FAQ
+    Python/index
+    JavaScript/index
 
 
 Indices and tables

@@ -5,3 +5,6 @@ __pycache__/
 
 # Sphinx documentation
 _build/
+
+# Dependency directories
+node_modules/
