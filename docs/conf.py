@@ -15,6 +15,7 @@
 
 import os
 from pathlib import Path
+import subprocess
 
 
 # -- Project information -----------------------------------------------------
@@ -77,8 +78,9 @@ autodoc_inherit_docstrings = False
 
 # -- sphinx-js configuration -------------------------------------------------
 
-npm_bin = str((Path(__file__).parent/'node_modules/.bin').resolve())
-os.environ["PATH"] = npm_bin + ":" + os.environ["PATH"]
+parent = Path(__file__).parent.resolve()
+npm_bin = parent/'node_modules/.bin'
+os.environ["PATH"] = str(npm_bin) + ":" + os.environ["PATH"]
 
 js_language = 'typescript'
 
@@ -87,6 +89,14 @@ js_source_path = '../js/src'
 jsdoc_config_path = '../js/tsconfig.json'
 
 root_for_relative_js_paths = '..'
+
+def npm_install(app, config):
+    node_modules = parent/'node_modules'
+    if not node_modules.exists():
+        subprocess.run(['npm', '--prefix=' + str(parent), 'install'])
+
+def setup(app):
+    app.connect('config-inited', npm_install)
 
 
 # -- Options for HTML output -------------------------------------------------
