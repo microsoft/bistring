@@ -12,6 +12,14 @@ body {
     height: 100%;
 }
 
+p, pre {
+    margin: 16px 0;
+}
+
+p:first-child {
+    margin-top: 0;
+}
+
 #wrapper {
     color: gray;
 }

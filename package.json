@@ -1,0 +1,18 @@
+{
+    "browser": "demo.browser.js",
+    "scripts": {
+        "build": "rollup -c"
+    },
+    "dependencies": {
+        "bistring": "^0.3.0"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.5.5",
+        "@babel/preset-env": "^7.5.5",
+        "core-js": "^3.2.1",
+        "rollup": "^1.19.4",
+        "rollup-plugin-babel": "^4.3.3",
+        "rollup-plugin-commonjs": "^10.0.2",
+        "rollup-plugin-node-resolve": "^5.2.0"
+    }
+}

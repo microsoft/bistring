@@ -1,4 +1,7 @@
-var BiString = bistring.BiString;
+import BiString, * as bistring from "bistring";
+
+window["BiString"] = BiString;
+window["bistring"] = bistring;
 
 const code = document.getElementById("code");
 const update = document.getElementById("update");
