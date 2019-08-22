@@ -5,6 +5,6 @@ check: all
 	npm test
 
 clean:
-	$(RM) -r lib
+	$(RM) -r dist
 
 .PHONY: all check clean
