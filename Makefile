@@ -3,6 +3,11 @@ all:
 	+$(MAKE) -C js
 	+$(MAKE) -C docs html
 
+deps:
+	+$(MAKE) -C python deps
+	+$(MAKE) -C js deps
+	+$(MAKE) -C docs deps
+
 check:
 	+$(MAKE) -C python check
 	+$(MAKE) -C js check
@@ -13,4 +18,4 @@ clean:
 	+$(MAKE) -C js clean
 	+$(MAKE) -C docs clean
 
-.PHONY: all check
+.PHONY: all deps check clean

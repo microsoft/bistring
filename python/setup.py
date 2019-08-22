@@ -47,7 +47,7 @@ setup(
         'pyicu',
     ],
     extras_require={
-        'test': [
+        'dev': [
             'lxml',
             'mypy',
             'pytest',
@@ -55,6 +55,6 @@ setup(
         ],
     },
     tests_require=[
-        'bistring[test]',
+        'bistring[dev]',
     ],
 )

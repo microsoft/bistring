@@ -1,0 +1,13 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+bistring = {editable = true,extras = ["dev"],path = "."}
+
+[packages]
+bistring = {path = "."}
+
+[requires]
+python_version = "3.7"

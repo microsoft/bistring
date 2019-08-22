@@ -15,14 +15,14 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
+    set -e
     sudo apt-get -qy install libicu-dev
-    python -m pip install --upgrade pip
-    CFLAGS="-std=c++11" pip install pyicu
-    pip install -e './python[test]'
-    pip install -r ./docs/requirements.txt
-    pip install pytest-azurepipelines
-    npm --prefix ./js install
-    npm --prefix ./docs install
+    pip install pipenv
+    echo bistring >python/.venv
+    echo bistring >docs/.venv
+    (cd python && CFLAGS="-std=c++11" pipenv run pip install pyicu"$(jq -r .develop.pyicu.version Pipfile.lock)")
+    (cd python && pipenv run pip install pytest-azurepipelines)
+    make deps
   displayName: 'Install dependencies'
 
 - script: |
