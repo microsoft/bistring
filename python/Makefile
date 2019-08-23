@@ -1,10 +1,13 @@
 all:
-	mypy -p bistring --html-report=build/mypy
+	pipenv run mypy -p bistring --html-report=build/mypy
+
+deps:
+	pipenv sync --dev
 
 check: all
-	pytest
+	pipenv run pytest
 
 clean:
-	python setup.py clean --all
+	pipenv run python setup.py clean --all
 
-.PHONY: all check clean
+.PHONY: all deps check clean
