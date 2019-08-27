@@ -250,6 +250,11 @@ def test_casefold():
     assert bs[4:5].original == '\uFB03'
     assert bs[4:5].modified == 'f'
 
+    # Odysseus
+    bs = bistr('Ὀδυσσεύς').casefold()
+    assert bs.original == 'Ὀδυσσεύς'
+    assert bs.modified == 'ὀδυσσεύσ'
+
 
 def test_lower():
     bs = bistr('DİYARBAKIR').lower('en_US')
@@ -259,6 +264,28 @@ def test_lower():
     bs = bistr('DİYARBAKIR').lower('tr_TR')
     assert bs.original == 'DİYARBAKIR'
     assert bs.modified == 'diyarbakır'
+
+    # Odysseus
+    bs = bistr('ὈΔΥΣΣΕΎΣ').lower('el_GR')
+    assert bs.original == 'ὈΔΥΣΣΕΎΣ'
+    assert bs.modified == 'ὀδυσσεύς'
+
+    # Examples from The Unicode Standard, Version 12.0, Chapter 3.13
+    bs = bistr('ᾼΣͅ').lower('el_GR')
+    assert bs.original == 'ᾼΣͅ'
+    assert bs.modified == 'ᾳςͅ'
+
+    bs = bistr('ͅΣͅ').lower('el_GR')
+    assert bs.original == 'ͅΣͅ'
+    assert bs.modified == 'ͅσͅ'
+
+    bs = bistr('ᾼΣᾼ').lower('el_GR')
+    assert bs.original == 'ᾼΣᾼ'
+    assert bs.modified == 'ᾳσᾳ'
+
+    bs = bistr('Σ').lower('el_GR')
+    assert bs.original == 'Σ'
+    assert bs.modified == 'σ'
 
 
 def test_upper():
@@ -271,6 +298,12 @@ def test_upper():
     bs = bistr('Diyarbakır').upper('tr_TR')
     assert bs.original == 'Diyarbakır'
     assert bs.modified == 'DİYARBAKIR'
+
+    # Odysseus
+    bs = bistr('Ὀδυσσεύς').upper('und')
+    assert bs.original == 'Ὀδυσσεύς'
+    assert bs.modified == 'ὈΔΥΣΣΕΎΣ'
+
 
 def test_title():
     bs = bistr('istanbul').title('en_US')
