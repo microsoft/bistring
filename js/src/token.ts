@@ -143,39 +143,13 @@ export class Tokenization {
      *         The requested slice as a new `Tokenization`.
      */
     slice(start?: number, end?: number): Tokenization {
-        if (start === undefined) {
-            return new Tokenization(this.text, this.tokens);
-        }
-        if (end === undefined) {
-            end = this.length;
-        }
-        if (start < 0) {
-            start += this.length;
-        }
-        if (end < 0) {
-            end += this.length;
-        }
-        if (end < start) {
-            end = start;
-        }
-
-        const substring = this.substring(start, end);
-        const tokens = this.tokens.slice(start, end);
-        if (tokens.length > 0) {
-            const delta = tokens[0].start;
-            for (const i in tokens) {
-                const token = tokens[i];
-                tokens[i] = new Token(token.text, token.start - delta, token.end - delta);
-            }
-        }
-
-        return new Tokenization(substring, tokens);
+        return new Tokenization(this.text, this.tokens.slice(start, end));
     }
 
     /**
      * Map a span of tokens to the corresponding substring.
      */
-    substring(start: number, end: number): BiString {
+    substring(start?: number, end?: number): BiString {
         const [first, last] = this.textBounds(start, end);
         return this.text.substring(first, last);
     }
@@ -183,14 +157,20 @@ export class Tokenization {
     /**
      * Map a span of tokens to the bounds of the corresponding text.
      */
-    textBounds(start: number, end: number): Bounds {
+    textBounds(start?: number, end?: number): Bounds {
+        if (start === undefined) {
+            start = 0;
+        }
+        if (end === undefined) {
+            end = this.length;
+        }
         return this.alignment.originalBounds(start, end);
     }
 
     /**
      * Map a span of tokens to the bounds of the corresponding original text.
      */
-    originalBounds(start: number, end: number): Bounds {
+    originalBounds(start?: number, end?: number): Bounds {
         return this.text.alignment.originalBounds(this.textBounds(start, end));
     }
 
