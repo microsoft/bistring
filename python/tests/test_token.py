@@ -8,39 +8,28 @@ import pytest
 def test_tokenization():
     text = bistr('  The quick, brown fox jumps over the lazy dog  ')
     text = text.replace(',', '')
+    text = text.sub(r'^ +| +$', '')
 
     tokens = Tokenization(text, [
-        Token.slice(text, 2, 5),
-        Token.slice(text, 6, 11),
-        Token.slice(text, 12, 17),
-        Token.slice(text, 18, 21),
-        Token.slice(text, 22, 27),
-        Token.slice(text, 28, 32),
-        Token.slice(text, 33, 36),
-        Token.slice(text, 37, 41),
-        Token.slice(text, 42, 45),
+        Token.slice(text, 0, 3),
+        Token.slice(text, 4, 9),
+        Token.slice(text, 10, 15),
+        Token.slice(text, 16, 19),
+        Token.slice(text, 20, 25),
+        Token.slice(text, 26, 30),
+        Token.slice(text, 31, 34),
+        Token.slice(text, 35, 39),
+        Token.slice(text, 40, 43),
     ])
     assert tokens.text == text
-    assert tokens.text_bounds(1, 3) == (6, 17)
+    assert tokens.text_bounds(1, 3) == (4, 15)
     assert tokens.original_bounds(1, 3) == (6, 18)
     assert tokens.bounds_for_text(0, 13) == (0, 3)
     assert tokens.bounds_for_original(0, 13) == (0, 2)
-    assert tokens.slice_by_text(36, 47).text == bistr('lazy dog')
-    assert tokens.slice_by_original(36, 48).text == bistr('the lazy dog')
-    assert tokens.snap_text_bounds(1, 13) == (2, 17)
+    assert tokens.slice_by_text(34, 43).substring() == bistr('lazy dog')
+    assert tokens.slice_by_original(36, 48).substring() == bistr('the lazy dog')
+    assert tokens.snap_text_bounds(2, 13) == (0, 15)
     assert tokens.snap_original_bounds(36, 47) == (34, 46)
-
-    tokens = tokens[1:-1]
-    assert tokens.text.original == 'quick, brown fox jumps over the lazy'
-    assert tokens.text.modified == 'quick brown fox jumps over the lazy'
-    assert tokens.text_bounds(1, 3) == (6, 15)
-    assert tokens.original_bounds(1, 3) == (7, 16)
-    assert tokens.bounds_for_text(8, 14) == (1, 3)
-    assert tokens.bounds_for_original(9, 15) == (1, 3)
-    assert tokens.slice_by_text(8, 14).text == bistr('brown fox')
-    assert tokens.slice_by_original(9, 15).text == bistr('brown fox')
-    assert tokens.snap_text_bounds(8, 14) == (6, 15)
-    assert tokens.snap_original_bounds(9, 15) == (7, 16)
 
 
 def test_infer():
@@ -65,7 +54,7 @@ def test_regex_tokenizer():
     assert tokens.text == text
     assert len(tokens) == 9
     assert tokens.text_bounds(0, 2) == (1, 10)
-    assert tokens[0:2].text == text[1:10]
+    assert tokens[0:2].substring() == text[1:10]
     assert len(tokens.slice_by_text(5, 10)) == 1
     assert len(tokens.slice_by_text(5, 11)) == 1
     assert len(tokens.slice_by_text(3, 13)) == 3
@@ -85,7 +74,7 @@ def test_splitting_tokenizer():
     assert tokens.text == text
     assert len(tokens) == 9
     assert tokens.text_bounds(0, 2) == (1, 11)
-    assert tokens[0:2].text == text[1:11]
+    assert tokens[0:2].substring() == text[1:11]
     assert len(tokens.slice_by_text(5, 10)) == 1
     assert len(tokens.slice_by_text(5, 11)) == 1
     assert len(tokens.slice_by_text(3, 13)) == 3
@@ -116,7 +105,7 @@ def test_word_tokenizer():
     assert tokens.text == text
     assert len(tokens) == 9
     assert tokens.text_bounds(0, 2) == (1, 10)
-    assert tokens[0:2].text == text[1:10]
+    assert tokens[0:2].substring() == text[1:10]
     assert len(tokens.slice_by_text(5, 10)) == 1
     assert len(tokens.slice_by_text(5, 11)) == 1
     assert len(tokens.slice_by_text(3, 13)) == 3

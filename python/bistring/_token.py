@@ -178,17 +178,25 @@ class Tokenization:
     def __getitem__(self, index: slice) -> Tokenization: ...
 
     def __getitem__(self, index: Index) -> Union[Token, Tokenization]:
-        if isinstance(index, slice):
-            start, stop, stride = index.indices(len(self))
-            if stride != 1:
-                raise ValueError('Non-unit strides not supported')
+        r"""
+        Indexing a `Tokenization` returns the nth token:
 
-            text = self.substring(start, stop)
-            tokens = self._tokens[index]
-            if tokens:
-                delta = tokens[0].start
-                tokens = [Token(t.text, t.start - delta, t.end - delta) for t in tokens]
-            return Tokenization(text, tokens)
+            >>> tokens = Tokenization.infer(
+            ...     "The quick, brown fox",
+            ...     ["The", "quick", "brown", "fox"],
+            ... )
+            >>> tokens[0]
+            Token(bistr('The'), start=0, end=3)
+
+        Slicing a `Tokenization` returns a new one with the requested slice of tokens:
+
+            >>> tokens = tokens[1:-1]
+            >>> tokens[0]
+            Token(bistr('quick'), start=4, end=9)
+        """
+
+        if isinstance(index, slice):
+            return Tokenization(self.text, self._tokens[index])
         else:
             return self._tokens[index]
 
@@ -201,19 +209,25 @@ class Tokenization:
 
     def substring(self, *args: AnyBounds) -> bistr:
         """
-        Map a span of tokens to the corresponding substring.
+        Map a span of tokens to the corresponding substring.  With no arguments, returns the substring from the first
+        to the last token.
         """
-        return self.text[self.alignment.original_slice(*args)]
+        i, j = self.text_bounds(*args)
+        return self.text[i:j]
 
     def text_bounds(self, *args: AnyBounds) -> Bounds:
         """
-        Map a span of tokens to the bounds of the corresponding text.
+        Map a span of tokens to the bounds of the corresponding text.  With no arguments, returns the bounds from the
+        first to the last token.
         """
+        if len(args) == 0:
+            args = (0, len(self))
         return self.alignment.original_bounds(*args)
 
     def original_bounds(self, *args: AnyBounds) -> Bounds:
         """
-        Map a span of tokens to the bounds of the corresponding original text.
+        Map a span of tokens to the bounds of the corresponding original text.  With no arguments, returns the bounds from the
+        first to the last token.
         """
         return self.text.alignment.original_bounds(self.text_bounds(*args))
 
