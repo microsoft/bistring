@@ -14,7 +14,7 @@ def readme():
 
 setup(
     name='bistring',
-    version='0.3.0',
+    version='0.4.0',
     description='Bidirectionally transformed strings',
     long_description=readme(),
     long_description_content_type='text/x-rst',
