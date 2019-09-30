@@ -28,17 +28,17 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@babel/preset-env": "^7.6.0",
+        "@babel/preset-env": "^7.6.2",
         "@types/jest": "^24.0.18",
         "core-js": "^3.2.1",
         "jest": "^24.9.0",
-        "jest-junit": "^7.0.0",
-        "rollup": "^1.21.2",
+        "jest-junit": "^8.0.0",
+        "rollup": "^1.22.0",
         "rollup-plugin-babel": "^4.3.3",
         "rollup-plugin-commonjs": "^10.1.0",
-        "rollup-plugin-typescript2": "^0.22.1",
-        "ts-jest": "^24.0.2",
-        "typescript": "^3.6.2"
+        "rollup-plugin-typescript2": "^0.24.3",
+        "ts-jest": "^24.1.0",
+        "typescript": "^3.6.3"
     },
     "jest": {
         "reporters": [
