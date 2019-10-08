@@ -164,6 +164,12 @@ def test_justify():
     assert bs.rjust(16) == bistr('', '    ') + bs
 
 
+def test_join():
+    sep = bistr('|', '::')
+    args = ['Hello', bistr('WORLD').lower()]
+    assert sep.join(args) == args[0] + sep + args[1]
+
+
 def test_split():
     bs = bistr('1,2,3')
     assert bs.split(',') == [bistr('1'), bistr('2'), bistr('3')]

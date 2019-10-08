@@ -363,16 +363,34 @@ class bistr:
         """
         return self.modified.endswith(suffix, start, end)
 
-    @classmethod
-    def join(cls, iterable: Iterable[String]) -> bistr:
+    def _append_alignment(self, alist: List[Bounds], alignment: Alignment) -> None:
+        if alist:
+            do, dm = alist[-1]
+        else:
+            do, dm = 0, 0
+        alist.extend((o + do, m + dm) for o, m in alignment)
+
+    def join(self, iterable: Iterable[String]) -> bistr:
         """
         Like :meth:`str.join`, concatenates many (bi)strings together.
         """
 
-        result = cls('')
+        original: List[str] = []
+        modified: List[str] = []
+        alignment: List[Bounds] = []
+
         for element in iterable:
-            result += cls(element)
-        return result
+            if original:
+                original.append(self.original)
+                modified.append(self.modified)
+                self._append_alignment(alignment, self.alignment)
+
+            bs = bistr(element)
+            original.append(bs.original)
+            modified.append(bs.modified)
+            self._append_alignment(alignment, bs.alignment)
+
+        return bistr("".join(original), "".join(modified), Alignment(alignment))
 
     def _find_whitespace(self, start: int) -> Bounds:
         for i in range(start, len(self)):
