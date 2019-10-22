@@ -56,6 +56,7 @@ export default [
         },
         external: [
             ...Object.keys(pkg.dependencies),
+            "regenerator-runtime/runtime",
         ],
         plugins: [
             typescript({
@@ -74,6 +75,8 @@ export default [
                             },
                             useBuiltIns: "usage",
                             shippedProposals: true,
+                            // Work around https://github.com/babel/babel/issues/8951
+                            exclude: ["@babel/plugin-transform-unicode-regex"],
                         },
                     ],
                 ],
