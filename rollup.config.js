@@ -1,6 +1,6 @@
 import babel from "rollup-plugin-babel";
 import commonjs from "rollup-plugin-commonjs";
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from "rollup-plugin-node-resolve";
 
 import pkg from "./package.json";
 
@@ -26,6 +26,8 @@ export default {
                         },
                         useBuiltIns: "usage",
                         shippedProposals: true,
+                        // Work around https://github.com/babel/babel/issues/8951
+                        exclude: ["@babel/plugin-transform-unicode-regex"],
                     },
                 ],
             ],

@@ -4,7 +4,8 @@
         "build": "rollup -c"
     },
     "dependencies": {
-        "bistring": "^0.3.0"
+        "bistring": "^0.4.0",
+        "regenerator-runtime": "^0.13.3"
     },
     "devDependencies": {
         "@babel/core": "^7.5.5",
