@@ -8,6 +8,3 @@ bistring = {editable = true,extras = ["dev"],path = "."}
 
 [packages]
 bistring = {path = "."}
-
-[requires]
-python_version = "3.7"

@@ -22,6 +22,7 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Text Processing :: General',
         'Typing :: Typed',
     ],
@@ -40,6 +41,7 @@ setup(
     },
     zip_safe=False,
     test_suite='tests',
+    python_requires='>=3.7',
     setup_requires=[
         'pytest-runner',
     ],
