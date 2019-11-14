@@ -15,6 +15,3 @@ Sphinx = ">=2.1"
 sphinx-js = {git = "https://github.com/tavianator/sphinx-js",ref = "d2e98fb07c8d2efe46820f1ab07a677244dc4dce"}
 bistring = {editable = true,path = "./../python"}
 regex = "*"
-
-[requires]
-python_version = "3.7"
