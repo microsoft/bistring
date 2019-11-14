@@ -2,11 +2,13 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-18.04'
 strategy:
   matrix:
     Python37:
       python.version: '3.7'
+    Python38:
+      python.version: '3.8'
 
 steps:
 - task: UsePythonVersion@0
@@ -20,9 +22,8 @@ steps:
     pip install pipenv
     echo bistring >python/.venv
     echo bistring >docs/.venv
-    (cd python && CFLAGS="-std=c++11" pipenv run pip install pyicu"$(jq -r .develop.pyicu.version Pipfile.lock)")
-    (cd python && pipenv run pip install pytest-azurepipelines)
     make deps
+    (cd python && pipenv run pip install pytest-azurepipelines)
   displayName: 'Install dependencies'
 
 - script: |
