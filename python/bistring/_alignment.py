@@ -3,18 +3,239 @@
 
 from __future__ import annotations
 
-__all__ = ['Alignment']
+__all__ = ['Alignment', 'AlignmentBuilder']
 
+from dataclasses import dataclass
 import bisect
 from typing import Any, Callable, Iterable, Iterator, List, Optional, Sequence, Tuple, TypeVar, Union, cast, overload
 
-from ._typing import AnyBounds, Bounds, Index, Range
+from ._typing import AnyBounds, BiIndex, Bounds, Index, Range
 
 
 T = TypeVar('T')
 U = TypeVar('U')
 Real = Union[int, float]
 CostFn = Callable[[Optional[T], Optional[U]], Real]
+
+
+@dataclass
+class ArithmeticProgression:
+    """
+    An arithmetic progression ``a[0] = start, a[1] = a[0] + stride, ...``.
+
+    Similar to the :class:`range` type, but allows a stride of zero.
+    """
+
+    __slots__ = ('first', 'last', 'stride', 'length')
+
+    first: int
+    """
+    The initial value of the sequence.
+    """
+
+    last: int
+    """
+    The final value of the sequence.
+    """
+
+    stride: int
+    """
+    The difference between successive sequence elements.
+    """
+
+    length: int
+    """
+    The length of the sequence.
+    """
+
+    def __init__(self, first: int, stride: int, length: int):
+        # Canonicalize equivalent ranges
+        if length <= 1:
+            if length == 0:
+                start = 0
+            stride = 0
+
+        self.first = first
+        self.last = first + (length - 1) * stride
+        self.stride = stride
+        self.length = length
+
+    def __str__(self) -> str:
+        if self.length <= 3:
+            return str(list(self))
+        elif self.stride == 0:
+            return f'[{self.first}] * {self.length}'
+        else:
+            return f'[{self[0]}, {self[1]}, ..., {self[-1]}]'
+
+    def __repr__(self) -> str:
+        return f'ArithmeticProgression({self.first}, {self.stride}, {self.length})'
+
+    def __iter__(self) -> Iterator[int]:
+        n = self.first
+        for _ in range(self.length):
+            yield n
+            n += self.stride
+
+    def __len__(self) -> int:
+        return self.length
+
+    @overload
+    def __getitem__(self, index: int) -> int: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> ArithmeticProgression: ...
+
+    def __getitem__(self, index: Index) -> Union[int, ArithmeticProgression]:
+        if isinstance(index, slice):
+            start, stop, stride = index.indices(self.length)
+            first = self.first + start * self.stride
+            length = (stop - start + stride - 1) // stride
+            return ArithmeticProgression(first, stride * self.stride, length)
+        else:
+            i = index
+            if i < 0:
+                i += self.length
+            if i < 0 or i >= self.length:
+                raise IndexError(f'Index {index} out of range of length-{self.length} arithmetic progression')
+            return self.first + i * self.stride
+
+    def __add__(self, other: Any) -> ArithmeticProgression:
+        if not isinstance(other, int):
+            return NotImplemented
+        else:
+            return ArithmeticProgression(self.first + other, self.stride, self.length)
+
+
+class AlignmentBuilder:
+    """
+    A builder for :class:`Alignment`\\ s.
+    """
+
+    def __init__(self, values: Iterable[BiIndex] = ()):
+        """
+        :param values:
+            A sequence of aligned indices to start with, possibly an :class:`Alignment`.
+        """
+
+        self._original: List[ArithmeticProgression] = []
+        self._modified: List[ArithmeticProgression] = []
+
+        self.extend(values)
+
+    def append(self, o: int, m: int) -> None:
+        """
+        Add a pair of aligned indices to the alignment.
+
+        :param o:
+            The index in the original sequence.
+        :param m:
+            The corresponding index in the modified sequence.
+        """
+
+        if self._original:
+            o_prog = self._original[-1]
+            m_prog = self._modified[-1]
+
+            o_stride = o - o_prog.last
+            m_stride = m - m_prog.last
+
+            if o_stride < 0:
+                raise ValueError('Original sequence position moved backwards')
+            elif m_stride < 0:
+                raise ValueError('Modified sequence position moved backwards')
+            elif o_stride == 0 and m_stride == 0:
+                return
+            elif o_prog.length == 1 or (o_stride == o_prog.stride and m_stride == m_prog.stride):
+                o_prog.last = o
+                o_prog.stride = o_stride
+                o_prog.length += 1
+
+                m_prog.last = m
+                m_prog.stride = m_stride
+                m_prog.length += 1
+
+                return
+
+        self._original.append(ArithmeticProgression(o, 0, 1))
+        self._modified.append(ArithmeticProgression(m, 0, 1))
+
+    def _append_progression(self, o: ArithmeticProgression, m: ArithmeticProgression) -> None:
+        # Defensive copy
+        o = o[:]
+        m = m[:]
+
+        if self._original:
+            o_prev = self._original[-1]
+            m_prev = self._modified[-1]
+
+            if o.first == o_prev.last and m.first == m_prev.last:
+                o = o[1:]
+                m = m[1:]
+                if not o:
+                    return
+
+            o_stride = o.first - o_prev.last
+            m_stride = m.first - m_prev.last
+            if o_prev.length == 1 or (o_stride == o_prev.stride and m_stride == m_prev.stride):
+                o_prev.stride = o_stride
+                m_prev.stride = m_stride
+
+                if o_stride == o.stride or m_stride == m.stride:
+                    o_prev.last = o.last
+                    o_prev.length += o.length
+
+                    m_prev.last = m.last
+                    m_prev.length += m.length
+
+                    return
+                else:
+                    o_prev.last = o.first
+                    o_prev.length += 1
+
+                    m_prev.last = o.first
+                    m_prev.length += 1
+
+                    o = o[1:]
+                    m = m[1:]
+                    if not o:
+                        return
+
+        self._original.append(o)
+        self._modified.append(m)
+
+    def extend(self, values: Iterable[BiIndex]) -> None:
+        """
+        Add some values to the alignment.
+
+        :param values:
+            The values to append.
+        """
+
+        if isinstance(values, Alignment):
+            for os, ms in zip(values._original, values._modified):
+                self._append_progression(os, ms)
+        else:
+            for o, m in values:
+                self.append(o, m)
+
+    def build(self) -> Alignment:
+        """
+        :returns:
+            The built alignment.
+        """
+
+        original = self._original[:]
+        modified = self._modified[:]
+
+        if len(original) == 0:
+            raise ValueError('No sequence positions to align')
+
+        # Clone the last element in case we modify it in the future
+        original[-1] = original[-1][:]
+        modified[-1] = modified[-1][:]
+
+        return Alignment._create(original, modified)
 
 
 class Alignment:
@@ -38,6 +259,8 @@ class Alignment:
         ...     (5, 6),
         ...     (13, 13),
         ... ])
+        >>> print(a)
+        [0⇋0, 4⇋5, 5⇋6, 13⇋13]
 
     Alignments can be used to answer questions like, "what's the smallest range of the original sequence that is
     guaranteed to contain this part of the modified sequence?"  For example, the range ``(0, 5)`` ("it is") is known to
@@ -65,6 +288,8 @@ class Alignment:
         ...     (0, 0), (1, 1), (2, 2), (4, 5), (5, 6), (6, 7), (7, 8),
         ...     (8, 9), (9, 10), (10, 11), (11, 12), (12, 13), (13, 13),
         ... ])
+        >>> print(a)
+        [0⇋0, 1⇋1, 2⇋2, 4⇋5, 5⇋6, ..., 12⇋13, 13⇋13]
 
     Can be more precise:
 
@@ -72,53 +297,66 @@ class Alignment:
         (0, 2)
     """
 
-    __slots__ = ('_original', '_modified')
+    # For space and time efficiency, Alignments use a representation that compresses runs of indices with a common
+    # difference -- i.e., arithmetic progressions.  So e.g. [(0, 0), (1, 1), (2, 2), (3, 4), (4, 6), (5, 8)] is stored
+    #
+    #     _original = [ArithmeticProgression(0, 1, 3), ArithmeticProgression(3, 1, 3)]
+    #     _modified = [ArithmeticProgression(0, 1, 3), ArithmeticProgression(4, 2, 3)]
+    #     _lengths  = [0, 3, 6]
 
-    _original: List[int]
-    _modified: List[int]
+    __slots__ = ('_original', '_modified', '_lengths')
 
-    def __init__(self, values: Iterable[Bounds]):
+    _original: List[ArithmeticProgression]
+    """
+    The indices in the original sequence.
+    """
+
+    _modified: List[ArithmeticProgression]
+    """
+    The indices in the modified sequence.
+    """
+
+    _lengths: List[int]
+    """
+    A running total of the lengths of each sub-progression, to support random access.
+    """
+
+    def __new__(cls, values: Iterable[BiIndex]) -> Alignment:
         """
         :param values:
             The sequence of aligned indices.  Each element should be a tuple ``(x, y)``, where `x` is the original
             sequence position and `y` is the modified sequence position.
         """
-
-        self._original = []
-        self._modified = []
-        for i, j in values:
-            if self._original:
-                if i < self._original[-1]:
-                    raise ValueError('Original sequence position moved backwards')
-                elif j < self._modified[-1]:
-                    raise ValueError('Modified sequence position moved backwards')
-                elif i == self._original[-1] and j == self._modified[-1]:
-                    continue
-
-            self._original.append(i)
-            self._modified.append(j)
-
-        if not self._original:
-            raise ValueError('No sequence positions to align')
+        return AlignmentBuilder(values).build()
 
     @classmethod
-    def _create(cls, original: List[int], modified: List[int]) -> Alignment:
+    def _create(cls, original: List[ArithmeticProgression], modified: List[ArithmeticProgression], lengths: Optional[List[int]] = None) -> Alignment:
+        if lengths is None:
+            lengths = [0]
+            for ap in original:
+                lengths.append(lengths[-1] + len(ap))
+
         result: Alignment = super().__new__(cls)
         result._original = original
         result._modified = modified
+        result._lengths = lengths
         return result
 
     def __str__(self) -> str:
-        i, j = self._original[0], self._original[-1]
-        k, l = self._modified[0], self._modified[-1]
-        if self._original == list(range(i, j + 1)) and self._modified == list(range(k, l + 1)):
-            return f'[{i}:{j}⇋{k}:{l}]'
-        else:
-            return '[' + ', '.join(f'{i}⇋{j}' for i, j in self) + ']'
+        chunks = []
+        for o, m in zip(self._original, self._modified):
+            chunks.append(f'{o[0]}⇋{m[0]}')
+            if len(o) > 1:
+                chunks.append(f'{o[1]}⇋{m[1]}')
+            if len(o) > 3:
+                chunks.append('...')
+            if len(o) > 2:
+                chunks.append(f'{o[-1]}⇋{m[-1]}')
+        return '[' + ', '.join(chunks) + ']'
 
     def __repr__(self) -> str:
-        i, j = self._original[0], self._original[-1]
-        if self._original == list(range(i, j + 1)) and self._modified == list(range(i, j + 1)):
+        if len(self._original) == 1 and self._original[0].stride == 1 and self._original == self._modified:
+            i, j = self.original_bounds()
             if i == 0:
                 return f'Alignment.identity({j})'
             else:
@@ -178,23 +416,23 @@ class Alignment:
         """
         Create an identity alignment, which maps all intervals to themselves.  You can pass the size of the sequence:
 
-            >>> Alignment.identity(5)
-            Alignment.identity(5)
+            >>> print(Alignment.identity(5))
+            [0⇋0, 1⇋1, ..., 5⇋5]
 
         or the start and end positions:
 
-            >>> Alignment.identity(1, 5)
-            Alignment.identity(1, 5)
+            >>> print(Alignment.identity(1, 6))
+            [1⇋1, 2⇋2, ..., 6⇋6]
 
         or a range-like object (:class:`range`, :class:`slice`, or ``Tuple[int, int]``):
 
-            >>> Alignment.identity(range(1, 5))
-            Alignment.identity(1, 5)
+            >>> print(Alignment.identity(range(2, 7)))
+            [2⇋2, 3⇋3, ..., 7⇋7]
         """
 
         start, stop = cls._parse_bounds(args)
-        values = list(range(start, stop + 1))
-        return cls._create(values, values)
+        ap = [ArithmeticProgression(start, 1, stop - start + 1)]
+        return cls._create(ap, ap)
 
     @classmethod
     def _infer_costs(cls, original: Sequence[T], modified: Sequence[U], cost_fn: CostFn[T, U]) -> List[Real]:
@@ -341,19 +579,52 @@ class Alignment:
             result = cls._infer_recursive(original, modified, real_cost_fn)
             return Alignment(result)
 
-    def __iter__(self) -> Iterator[Tuple[int, int]]:
-        return zip(self._original, self._modified)
+    def __iter__(self) -> Iterator[BiIndex]:
+        for o, m in zip(self._original, self._modified):
+            yield from zip(o, m)
 
     def __len__(self) -> int:
-        return len(self._original)
+        return self._lengths[-1]
+
+    def _index(self, index: int, start: int = 0) -> BiIndex:
+        """
+        :returns:
+            ``i, j`` such that ``self._{original,modified}[i][j]`` is at the given `index`.
+        """
+
+        i = bisect.bisect_right(self._lengths, index, start + 1) - 1
+        j = index - self._lengths[i]
+        return i, j
+
+    def _slice(self, i: int, j: int, k: int, l: int) -> Alignment:
+        """
+        :returns:
+            The slice of this alignment from ``[i][j]`` to ``[k][l]``.
+        """
+
+        if i == k:
+            original = [self._original[i][j:l]]
+            modified = [self._modified[i][j:l]]
+        else:
+            original = [self._original[i][j:]]
+            modified = [self._modified[i][j:]]
+
+            original.extend(self._original[i+1:k])
+            modified.extend(self._modified[i+1:k])
+
+            if l > 0:
+                original.append(self._original[k][:l])
+                modified.append(self._modified[k][:l])
+
+        return self._create(original, modified)
 
     @overload
-    def __getitem__(self, index: int) -> Bounds: ...
+    def __getitem__(self, index: int) -> BiIndex: ...
 
     @overload
     def __getitem__(self, index: slice) -> Alignment: ...
 
-    def __getitem__(self, index: Index) -> Union[Bounds, Alignment]:
+    def __getitem__(self, index: Index) -> Union[BiIndex, Alignment]:
         """
         Indexing an alignment returns the nth pair of aligned positions:
 
@@ -363,17 +634,23 @@ class Alignment:
 
         Slicing an alignment returns a new alignment with a subrange of its values:
 
-            >>> a[1:5]
-            Alignment.identity(1, 4)
+            >>> print(a[1:5])
+            [1⇋1, 2⇋2, ..., 4⇋4]
         """
 
         if isinstance(index, slice):
             start, stop, stride = index.indices(len(self))
             if stride != 1:
                 raise ValueError('Non-unit strides not supported')
-            return self._create(self._original[index], self._modified[index])
+
+            i, j = self._index(start)
+            k, l = self._index(stop, i)
+            return self._slice(i, j, k, l)
         else:
-            return (self._original[index], self._modified[index])
+            if index < 0:
+                index += len(self)
+            i, j = self._index(index)
+            return (self._original[i][j], self._modified[i][j])
 
     def shift(self, delta_o: int, delta_m: int) -> Alignment:
         """
@@ -387,30 +664,76 @@ class Alignment:
             An alignment with all the positions shifted by the given amounts.
         """
 
-        return self._create(
-            [o + delta_o for o in self._original],
-            [m + delta_m for m in self._modified],
-        )
+        original = [o + delta_o for o in self._original]
+        modified = [m + delta_m for m in self._modified]
+        return self._create(original, modified, self._lengths)
 
-    def _search(self, source: List[int], start: int, stop: int) -> Bounds:
-        first = bisect.bisect_right(source, start)
-        if first == 0:
-            raise IndexError('range start too small')
-        first -= 1
+    def _search(self, source: List[ArithmeticProgression], start: int, stop: int) -> Tuple[int, int, int, int]:
+        """
+        Find the smallest subrange of the `source` that contains the given bounds.
 
-        last = bisect.bisect_left(source, stop, first)
-        if last == len(source):
+        :param source:
+            The sequence to search (original or modified).
+        :param start:
+            The start of the target range.
+        :param end:
+            The end of the target range.
+        :returns:
+            The smallest range ``i, j, k, l`` such that ``source[i][j] <= start <= stop <= source[k][l]``.
+        """
+
+        # Find the last value <= start
+        i = 0
+        high = len(source)
+        while i < high:
+            mid = (i + high) // 2
+            if start < source[mid].last:
+                high = mid
+            else:
+                i = mid + 1
+
+        if i == len(source) or source[i][0] > start:
+            i -= 1
+            if i < 0:
+                raise IndexError('range start too small')
+            j = len(source[i]) - 1
+        else:
+            ap = source[i]
+            j = (start - ap.first) // ap.stride
+
+        # Find the first value >= stop
+        k = i
+        high = len(source)
+        while k < high:
+            mid = (k + high) // 2
+            if stop <= source[mid].last:
+                high = mid
+            else:
+                k = mid + 1
+
+        if k == len(source):
             raise IndexError('range end too big')
+        elif k == i:
+            l = j
+        else:
+            l = 0
+        ap = source[k]
+        if ap[l] < stop:
+            l = (stop - ap.first + ap.stride - 1) // ap.stride
 
-        return first, last
+        return i, j, k, l
 
-    def _bounds(self, source: List[int], target: List[int], args: Tuple[AnyBounds, ...]) -> Bounds:
+    def _bounds(self, source: List[ArithmeticProgression], target: List[ArithmeticProgression], args: Tuple[AnyBounds, ...]) -> Bounds:
+        """
+        Map the given bounds in the `source` to the `target`.
+        """
+
         start, stop = self._parse_optional_bounds(args)
         if start is None or stop is None:
-            i, j = 0, -1
+            i, j, k, l = 0, 0, -1, -1
         else:
-            i, j = self._search(source, start, stop)
-        return (target[i], target[j])
+            i, j, k, l = self._search(source, start, stop)
+        return (target[i][j], target[k][l])
 
     def original_bounds(self, *args: AnyBounds) -> Bounds:
         """
@@ -489,38 +812,34 @@ class Alignment:
         Slice this alignment by a span of the original sequence.
 
             >>> a = Alignment.identity(5).shift(1, 0)
-            >>> a.slice_by_original(2, 4)
-            Alignment([(2, 1), (3, 2), (4, 3)])
+            >>> print(a.slice_by_original(2, 4))
+            [2⇋1, 3⇋2, 4⇋3]
 
         :returns:
             The slice of this alignment that corresponds with the given span of the original sequence.
         """
 
         start, stop = self._parse_bounds(args)
-        first, last = self._search(self._original, start, stop)
-        original = self._original[first:last+1]
-        original = [min(max(i, start), stop) for i in original]
-        modified = self._modified[first:last+1]
-        return self._create(original, modified)
+        i, j, k, l = self._search(self._original, start, stop)
+        sliced = self._slice(i, j, k, l + 1)
+        return Alignment((min(max(o, start), stop), m) for o, m in sliced)
 
     def slice_by_modified(self, *args: AnyBounds) -> Alignment:
         """
         Slice this alignment by a span of the modified sequence.
 
             >>> a = Alignment.identity(5).shift(1, 0)
-            >>> a.slice_by_modified(1, 3)
-            Alignment([(2, 1), (3, 2), (4, 3)])
+            >>> print(a.slice_by_modified(1, 3))
+            [2⇋1, 3⇋2, 4⇋3]
 
         :returns:
             The slice of this alignment that corresponds with the given span of the modified sequence.
         """
 
         start, stop = self._parse_bounds(args)
-        first, last = self._search(self._modified, start, stop)
-        original = self._original[first:last+1]
-        modified = self._modified[first:last+1]
-        modified = [min(max(i, start), stop) for i in modified]
-        return self._create(original, modified)
+        i, j, k, l = self._search(self._modified, start, stop)
+        sliced = self._slice(i, j, k, l + 1)
+        return Alignment((o, min(max(m, start), stop)) for o, m in sliced)
 
     def __add__(self, other: Any) -> Alignment:
         """
@@ -530,18 +849,55 @@ class Alignment:
         if not isinstance(other, Alignment):
             return NotImplemented
 
-        o_orig = other._original
-        o_mod = other._modified
+        builder = AlignmentBuilder(self)
+        builder.extend(other)
+        return builder.build()
 
-        if o_orig[0] < self._original[-1]:
-            raise ValueError('Original sequence position moved backwards')
-        elif o_mod[0] < self._modified[-1]:
-            raise ValueError('Modified sequence position moved backwards')
-        elif o_orig[0] == self._original[-1] and o_mod[0] == self._modified[-1]:
-            o_orig = o_orig[1:]
-            o_mod = o_mod[1:]
+    class _Iterator:
+        """
+        Helper class for the :meth:`compose` implementation.
+        """
 
-        return self._create(self._original + o_orig, self._modified + o_mod)
+        def __init__(self, alignment: Alignment):
+            self._originals = alignment._original
+            self._modifieds = alignment._modified
+            self._current_o = ArithmeticProgression(0, 0, 0)
+            self._current_m = ArithmeticProgression(0, 0, 0)
+            self._i = -1
+            self._j = -1
+
+            self.next_original = -1
+            self.next_modified = -1
+            self.advance()
+            self.advance()
+
+        @property
+        def has_next(self) -> bool:
+            return self.original >= 0
+
+        def advance(self) -> None:
+            self.original = self.next_original
+            self.modified = self.next_modified
+
+            self._j += 1
+            if self._i >= len(self._originals):
+                if self._j > 1:
+                    raise IndexError('Ran off the end of the alignment')
+            elif self._j >= self._current_o.length:
+                self._i += 1
+                self._j = 0
+
+                if self._i == len(self._originals):
+                    self.next_original = -1
+                    self.next_modified = -1
+                else:
+                    self._current_o = self._originals[self._i]
+                    self._current_m = self._modifieds[self._i]
+                    self.next_original = self._current_o.first
+                    self.next_modified = self._current_m.first
+            else:
+                self.next_original += self._current_o.stride
+                self.next_modified += self._current_m.stride
 
     def compose(self, other: Alignment) -> Alignment:
         """
@@ -552,39 +908,36 @@ class Alignment:
         if self.modified_bounds() != other.original_bounds():
             raise ValueError('Incompatible alignments')
 
-        original = []
-        modified = []
-        i, i_max = 0, len(self)
-        j, j_max = 0, len(other)
+        builder = AlignmentBuilder()
+        i = self._Iterator(self)
+        j = self._Iterator(other)
 
-        while i < i_max:
-            # Map self._original[i] to its lower bound in other
-            while self._modified[i] > other._original[j]:
-                j += 1
-            while self._modified[i] < other._original[j] and self._modified[i + 1] <= other._original[j]:
-                i += 1
-            original.append(self._original[i])
-            modified.append(other._modified[j])
+        while i.has_next:
+            # Map i.original to its lower bound in other
+            while i.modified > j.original:
+                j.advance()
+            while i.modified < j.original and i.next_modified <= j.original:
+                i.advance()
+            builder.append(i.original, j.modified)
 
-            # Map self._original[i] to its upper bound in other (if it's different)
-            while i + 1 < i_max and self._original[i] == self._original[i + 1]:
-                i += 1
+            # Map i.original to its upper bound in other (if it's different)
+            while i.original == i.next_original:
+                i.advance()
 
             needs_upper = False
-            while j + 1 < j_max and self._modified[i] >= other._original[j + 1]:
+            while j.next_original >= 0 and i.modified >= j.next_original:
                 needs_upper = True
-                j += 1
+                j.advance()
             if needs_upper:
-                original.append(self._original[i])
-                modified.append(other._modified[j])
+                builder.append(i.original, j.modified)
 
-            i += 1
+            i.advance()
 
-        return self._create(original, modified)
+        return builder.build()
 
     def inverse(self) -> Alignment:
         """
         :returns:
             The inverse of this alignment, from the modified to the original sequence.
         """
-        return self._create(self._modified, self._original)
+        return self._create(self._modified, self._original, self._lengths)

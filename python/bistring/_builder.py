@@ -5,10 +5,10 @@ __all__ = ['BistrBuilder']
 
 from typing import Iterable, List, Match, Optional
 
-from ._alignment import Alignment
+from ._alignment import Alignment, AlignmentBuilder
 from ._bistr import bistr, String
 from ._regex import compile_regex, expand_template
-from ._typing import Bounds, Regex, Replacement
+from ._typing import Regex, Replacement
 
 
 class BistrBuilder:
@@ -57,7 +57,7 @@ class BistrBuilder:
 
     _original: bistr
     _modified: List[str]
-    _alignment: List[Bounds]
+    _alignment: AlignmentBuilder
     _opos: int
     _mpos: int
 
@@ -69,7 +69,7 @@ class BistrBuilder:
 
         self._original = bistr(original)
         self._modified = []
-        self._alignment = [(0, 0)]
+        self._alignment = AlignmentBuilder([(0, 0)])
         self._opos = 0
         self._mpos = 0
 
@@ -99,7 +99,7 @@ class BistrBuilder:
         """
         The alignment built so far from self.current to self.modified.
         """
-        return Alignment(self._alignment)
+        return self._alignment.build()
 
     @property
     def position(self) -> int:
@@ -133,7 +133,7 @@ class BistrBuilder:
         self._opos += ocount
         self._mpos += mcount
         if ocount > 0 or mcount > 0:
-            self._alignment.append((self._opos, self._mpos))
+            self._alignment.append(self._opos, self._mpos)
 
     def skip(self, n: int) -> None:
         """
@@ -312,6 +312,6 @@ class BistrBuilder:
         """
         self._original = self.build()
         self._modified = []
-        self._alignment = [(0, 0)]
+        self._alignment = AlignmentBuilder([(0, 0)])
         self._opos = 0
         self._mpos = 0
