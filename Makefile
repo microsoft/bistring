@@ -11,7 +11,7 @@ deps:
 check:
 	+$(MAKE) -C python check
 	+$(MAKE) -C js check
-	+$(MAKE) -C docs doctest
+	+$(MAKE) -C docs check
 
 clean:
 	+$(MAKE) -C python clean

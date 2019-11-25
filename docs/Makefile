@@ -16,7 +16,9 @@ deps:
 	pipenv sync
 	npm install
 
-.PHONY: help deps Makefile
+check: doctest ;
+
+.PHONY: help deps check Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
