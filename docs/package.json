@@ -1,5 +1,6 @@
 {
     "dependencies": {
-        "typedoc": "^0.15.1"
+        "typedoc": "^0.17.0",
+        "typescript": "^3.8.3"
     }
 }
