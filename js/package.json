@@ -26,19 +26,18 @@
         "watch": "rollup -cw",
         "test": "jest"
     },
-    "dependencies": {},
     "devDependencies": {
-        "@babel/preset-env": "^7.11.0",
-        "@types/jest": "^26.0.10",
-        "core-js": "^3.6.5",
-        "jest": "^26.4.2",
-        "jest-junit": "^11.1.0",
-        "rollup": "^2.26.8",
+        "@babel/preset-env": "^7.13.0",
+        "@types/jest": "^26.0.21",
+        "core-js": "^3.9.1",
+        "jest": "^26.6.3",
+        "jest-junit": "^12.0.0",
+        "rollup": "^2.41.4",
         "rollup-plugin-babel": "^4.4.0",
         "rollup-plugin-commonjs": "^10.1.0",
-        "rollup-plugin-typescript2": "^0.27.2",
-        "ts-jest": "^26.3.0",
-        "typescript": "^4.0.2"
+        "rollup-plugin-typescript2": "^0.30.0",
+        "ts-jest": "^26.5.4",
+        "typescript": "^4.2.3"
     },
     "jest": {
         "reporters": [

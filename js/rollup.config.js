@@ -20,7 +20,7 @@ export default [
             },
         ],
         external: [
-            ...Object.keys(pkg.dependencies),
+            ...Object.keys(pkg.dependencies || {}),
         ],
         plugins: [
             typescript({
@@ -55,7 +55,7 @@ export default [
             name: "bistring",
         },
         external: [
-            ...Object.keys(pkg.dependencies),
+            ...Object.keys(pkg.dependencies || {}),
             "regenerator-runtime/runtime",
         ],
         plugins: [
@@ -75,8 +75,6 @@ export default [
                             },
                             useBuiltIns: "usage",
                             shippedProposals: true,
-                            // Work around https://github.com/babel/babel/issues/8951
-                            exclude: ["@babel/plugin-transform-unicode-regex"],
                         },
                     ],
                 ],
