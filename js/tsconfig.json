@@ -15,7 +15,6 @@
         "src/**/*"
     ],
     "typedocOptions": {
-        "mode": "modules",
         "excludePrivate": true
     }
 }
