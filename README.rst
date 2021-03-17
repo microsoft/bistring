@@ -57,8 +57,8 @@ This project has adopted the `Microsoft Open Source Code of Conduct <https://ope
 For more information see the `Code of Conduct FAQ <https://opensource.microsoft.com/codeofconduct/faq/>`_ or contact `opencode@microsoft.com <mailto:opencode@microsoft.com>`_ with any additional questions or comments.
 
 
-.. |Build status| image:: https://dev.azure.com/maluuba/bistring/_apis/build/status/microsoft.bistring?branchName=master
-    :target: https://dev.azure.com/maluuba/bistring/_build/latest?definitionId=132&branchName=master
+.. |Build status| image:: https://github.com/microsoft/bistring/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/microsoft/bistring/actions/workflows/ci.yml
 .. |Documentation status| image:: https://readthedocs.org/projects/bistring/badge/?version=latest
     :target: https://bistring.readthedocs.io/en/latest/?badge=latest
 .. |PyPI version| image:: https://badge.fury.io/py/bistring.svg
