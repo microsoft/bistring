@@ -21,7 +21,7 @@ class Alignment:
     r"""
     An alignment between two related sequences.
 
-    Consider this alignments between two strings:
+    Consider this alignment between two strings:
 
     .. code-block:: text
 
