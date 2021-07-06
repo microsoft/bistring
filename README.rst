@@ -27,9 +27,9 @@ For example:
 Languages
 ---------
 
-|PyPI version| |npm version|
+|PyPI version| |npm version| |crates.io version|
 
-bistring is available in multiple languages, currently `Python <python>`_ and `JavaScript/TypeScript <js>`_.
+bistring is available in multiple languages, currently `Python <python>`_, `JavaScript/TypeScript <js>`_, and `Rust <rust>`_.
 Ports to other languages are planned for the near future.
 
 The code is structured similarly in each language to make it easy to share algorithms, tests, and fixes between them.
@@ -65,3 +65,5 @@ For more information see the `Code of Conduct FAQ <https://opensource.microsoft.
     :target: https://pypi.org/project/bistring/
 .. |npm version| image:: https://badge.fury.io/js/bistring.svg
     :target: https://www.npmjs.com/package/bistring
+.. |crates.io version| image:: https://img.shields.io/crates/v/bistring
+    :target: https://crates.io/crates/bistring
