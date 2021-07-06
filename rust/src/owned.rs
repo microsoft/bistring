@@ -1,8 +1,10 @@
 use crate::align::Alignment;
+use crate::slice::BiStr;
 
+use std::borrow::Borrow;
 use std::fmt::{self, Debug, Formatter};
 use std::iter::{self, FromIterator};
-use std::ops::{Add, AddAssign};
+use std::ops::{Add, AddAssign, Deref, Index, RangeBounds};
 
 /// A bidirectionally transformed string.
 #[derive(Clone, Eq, PartialEq)]
@@ -86,16 +88,16 @@ impl BiString {
         self.modified.push_str(string);
     }
 
-    /// Append another BiString to this BiString.
-    pub fn push_bistr(&mut self, bistring: &BiString) {
+    /// Append another BiString slice to this BiString.
+    pub fn push_bistr(&mut self, bistring: &BiStr) {
         let ol = self.original.len();
         let ml = self.modified.len();
-        for (o, m) in bistring.alignment.iter() {
+        for (o, m) in bistring.alignment() {
             self.alignment.push(ol + o, ml + m);
         }
 
-        self.original += &bistring.original;
-        self.modified += &bistring.modified;
+        self.original.push_str(bistring.original());
+        self.modified.push_str(bistring.modified());
     }
 
     /// Make a copy of this bistring with its ASCII characters lowercased.
@@ -114,6 +116,15 @@ impl Add<&str> for BiString {
 
     fn add(mut self, rhs: &str) -> Self {
         self.push_str(rhs);
+        self
+    }
+}
+
+impl Add<&BiStr> for BiString {
+    type Output = Self;
+
+    fn add(mut self, rhs: &BiStr) -> Self {
+        self.push_bistr(rhs);
         self
     }
 }
@@ -144,19 +155,35 @@ impl AddAssign<&str> for BiString {
     }
 }
 
+impl AddAssign<&BiStr> for BiString {
+    fn add_assign(&mut self, rhs: &BiStr) {
+        self.push_bistr(rhs);
+    }
+}
+
 impl AddAssign<&BiString> for BiString {
     fn add_assign(&mut self, rhs: &Self) {
         self.push_bistr(rhs);
     }
 }
 
+impl Borrow<BiStr> for BiString {
+    fn borrow(&self) -> &BiStr {
+        &*self
+    }
+}
+
 impl Debug for BiString {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        if self.original == self.modified {
-            write!(f, "⮎{:?}⮌", self.original)
-        } else {
-            write!(f, "({:?} ⇋ {:?})", self.original, self.modified)
-        }
+        write!(f, "{:?}", &self[..])
+    }
+}
+
+impl Deref for BiString {
+    type Target = BiStr;
+
+    fn deref(&self) -> &BiStr {
+        BiStr::new(self, ..)
     }
 }
 
@@ -169,6 +196,20 @@ impl From<&str> for BiString {
 impl From<String> for BiString {
     fn from(string: String) -> Self {
         Self::from_string(string)
+    }
+}
+
+impl<R: RangeBounds<usize>> Index<R> for BiString {
+    type Output = BiStr;
+
+    fn index(&self, index: R) -> &BiStr {
+        BiStr::new(self, index)
+    }
+}
+
+impl PartialEq<BiStr> for BiString {
+    fn eq(&self, rhs: &BiStr) -> bool {
+        &self[..] == rhs
     }
 }
 
