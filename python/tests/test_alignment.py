@@ -18,6 +18,27 @@ def test_empty():
     assert alignment.modified_bounds(0, 0) == (0, 0)
 
 
+def test_indexing():
+    data = [
+        (0, 1),
+        (1, 2),
+        (2, 4),
+        (3, 8),
+        (4, 16),
+    ]
+    length = len(data)
+    alignment = Alignment(data)
+
+    assert len(alignment) == length
+
+    for i in range(length):
+        assert alignment[i] == data[i]
+        assert alignment[i - length] == data[i - length]
+
+        for j in range(i + 1, length + 1):
+            assert list(alignment[i:j]) == data[i:j]
+
+
 def test_identity():
     alignment = Alignment.identity(1, 16)
 
