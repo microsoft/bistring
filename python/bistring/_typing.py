@@ -4,6 +4,8 @@
 from typing import Callable, Match, Pattern, Tuple, Union
 
 
+BiIndex = Tuple[int, int]
+
 Bounds = Tuple[int, int]
 
 AnyBounds = Union[int, range, slice, Bounds]

@@ -8,7 +8,7 @@ from typing import Iterable, List, Match, Optional
 from ._alignment import Alignment
 from ._bistr import bistr, String
 from ._regex import compile_regex, expand_template
-from ._typing import Bounds, Regex, Replacement
+from ._typing import BiIndex, Regex, Replacement
 
 
 class BistrBuilder:
@@ -57,7 +57,7 @@ class BistrBuilder:
 
     _original: bistr
     _modified: List[str]
-    _alignment: List[Bounds]
+    _alignment: List[BiIndex]
     _opos: int
     _mpos: int
 
