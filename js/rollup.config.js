@@ -1,6 +1,6 @@
-import babel from "rollup-plugin-babel";
-import commonjs from "rollup-plugin-commonjs";
-import typescript from "rollup-plugin-typescript2";
+import babel from "@rollup/plugin-babel";
+import commonjs from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
 
 import pkg from "./package.json";
 
@@ -12,11 +12,13 @@ export default [
                 file: pkg.main,
                 format: "cjs",
                 exports: "named",
+                sourcemap: true,
             },
             {
                 file: pkg.module,
                 format: "esm",
                 exports: "named",
+                sourcemap: true,
             },
         ],
         external: [
@@ -24,11 +26,12 @@ export default [
         ],
         plugins: [
             typescript({
-                typescript: require("typescript"),
+                tsconfig: "./tsconfig.json",
             }),
             babel({
                 exclude: "node_modules/**",
                 extensions: [".js", ".ts"],
+                babelHelpers: "bundled",
                 presets: [
                     [
                         "@babel/preset-env",
@@ -53,6 +56,7 @@ export default [
             format: "umd",
             exports: "named",
             name: "bistring",
+            sourcemap: true,
         },
         external: [
             ...Object.keys(pkg.dependencies || {}),
@@ -60,11 +64,12 @@ export default [
         ],
         plugins: [
             typescript({
-                typescript: require("typescript"),
+                tsconfig: "./tsconfig.json",
             }),
             babel({
                 exclude: "node_modules/**",
                 extensions: [".js", ".ts"],
+                babelHelpers: "bundled",
                 presets: [
                     [
                         "@babel/preset-env",
