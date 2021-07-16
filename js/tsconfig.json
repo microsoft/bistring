@@ -7,12 +7,16 @@
         "removeComments": true,
         "declaration": true,
         "outDir": "dist",
+        "declarationDir": ".",
         "strict": true,
         "sourceMap": true,
         "declarationMap": true
     },
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "dist"
     ],
     "typedocOptions": {
         "excludePrivate": true

@@ -20,7 +20,7 @@ s = s.replace(/[^\w\s]+/g, "");  // Strip everything but letters and spaces
 s = s.substring(0, 19);          // Extract a substring
 console.log(s.modified);         // The modified substring, after changes
 // the quick brown fox
-console.log(s.original);
+console.log(s.original);         // The original substring, before changes
 // 𝕿𝖍𝖊 𝖖𝖚𝖎𝖈𝖐, 𝖇𝖗𝖔𝖜𝖓 🦊
 ```
 
