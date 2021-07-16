@@ -8,7 +8,7 @@ __all__ = ['Alignment']
 import bisect
 from typing import Any, Callable, Iterable, Iterator, List, Optional, Sequence, Tuple, TypeVar, Union, cast, overload
 
-from ._typing import AnyBounds, Bounds, Index, Range
+from ._typing import AnyBounds, BiIndex, Bounds, Index, Range
 
 
 T = TypeVar('T')
@@ -77,7 +77,7 @@ class Alignment:
     _original: List[int]
     _modified: List[int]
 
-    def __init__(self, values: Iterable[Bounds]):
+    def __init__(self, values: Iterable[BiIndex]):
         """
         :param values:
             The sequence of aligned indices.  Each element should be a tuple ``(x, y)``, where `x` is the original
@@ -273,7 +273,7 @@ class Alignment:
         return result
 
     @classmethod
-    def _infer_recursive(cls, original: Sequence[T], modified: Sequence[U], cost_fn: CostFn[T, U]) -> List[Bounds]:
+    def _infer_recursive(cls, original: Sequence[T], modified: Sequence[U], cost_fn: CostFn[T, U]) -> List[BiIndex]:
         """
         Hirschberg's algorithm for computing optimal alignments in linear space.
 
@@ -341,19 +341,19 @@ class Alignment:
             result = cls._infer_recursive(original, modified, real_cost_fn)
             return Alignment(result)
 
-    def __iter__(self) -> Iterator[Tuple[int, int]]:
+    def __iter__(self) -> Iterator[BiIndex]:
         return zip(self._original, self._modified)
 
     def __len__(self) -> int:
         return len(self._original)
 
     @overload
-    def __getitem__(self, index: int) -> Bounds: ...
+    def __getitem__(self, index: int) -> BiIndex: ...
 
     @overload
     def __getitem__(self, index: slice) -> Alignment: ...
 
-    def __getitem__(self, index: Index) -> Union[Bounds, Alignment]:
+    def __getitem__(self, index: Index) -> Union[BiIndex, Alignment]:
         """
         Indexing an alignment returns the nth pair of aligned positions:
 
