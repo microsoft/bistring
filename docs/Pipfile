@@ -6,10 +6,11 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+markupsafe = "==2.0.1"
+regex = "*"
+sphinx = ">=4.4.0"
 sphinx-autodoc-typehints = "*"
 sphinx-rtd-theme = "*"
-Sphinx = ">=3.2.1"
-# Need the workaround for https://github.com/mozilla/sphinx-js/issues/110
-sphinx-js = {git = "https://github.com/tavianator/sphinx-js",ref = "ad515dced59c16c8b958e5dfb0eaf8943885945c"}
+# Work around various issues
+sphinx-js = {git = "https://github.com/tavianator/sphinx-js",ref = "44d94acfa61044963f5f7d9d94c7105400bdcfb3"}
 bistring = {editable = true,path = "./../python"}
-regex = "*"
