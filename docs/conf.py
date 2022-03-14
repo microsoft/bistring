@@ -21,7 +21,7 @@ import subprocess
 # -- Project information -----------------------------------------------------
 
 project = 'bistring'
-copyright = '2019, Microsoft'
+copyright = '2022, Microsoft'
 author = 'Tavian Barnes'
 
 # The full version, including alpha/beta/rc tags
