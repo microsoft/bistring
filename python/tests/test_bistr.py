@@ -165,6 +165,8 @@ def test_justify():
 
 
 def test_join():
+    assert bistr('').join([]) == bistr('')
+
     sep = bistr('|', '::')
     args = ['Hello', bistr('WORLD').lower()]
     assert sep.join(args) == args[0] + sep + args[1]

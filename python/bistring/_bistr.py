@@ -10,7 +10,7 @@ from typing import Any, Callable, Iterable, Iterator, List, Optional, Tuple, Uni
 import unicodedata
 
 from ._alignment import Alignment
-from ._typing import Bounds, Index, Regex, Replacement
+from ._typing import BiIndex, Bounds, Index, Regex, Replacement
 
 
 Real = Union[int, float]
@@ -364,11 +364,8 @@ class bistr:
         return self.modified.endswith(suffix, start, end)
 
     def _append_alignment(self, alist: List[Bounds], alignment: Alignment) -> None:
-        if alist:
-            do, dm = alist[-1]
-        else:
-            do, dm = 0, 0
-        alist.extend((o + do, m + dm) for o, m in alignment)
+        do, dm = alist[-1]
+        alist.extend((o + do, m + dm) for o, m in alignment[1:])
 
     def join(self, iterable: Iterable[String]) -> bistr:
         """
@@ -377,7 +374,7 @@ class bistr:
 
         original: List[str] = []
         modified: List[str] = []
-        alignment: List[Bounds] = []
+        alignment: List[BiIndex] = [(0, 0)]
 
         for element in iterable:
             if original:
