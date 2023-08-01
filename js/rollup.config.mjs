@@ -1,8 +1,9 @@
 import babel from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
+import fs from "fs";
 
-import pkg from "./package.json";
+import pkg from "./package.json" assert { type: "json" };
 
 export default [
     {

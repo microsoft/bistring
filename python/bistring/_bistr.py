@@ -516,12 +516,12 @@ class bistr:
         Converts this string to lowercase.  Unless you specify the `locale` parameter, the current system locale will be
         used.
 
-        >>> bistr('HELLO WORLD').lower()
-        bistr('HELLO WORLD', 'hello world', Alignment.identity(11))
-        >>> bistr('I').lower('en_US')
-        bistr('I', 'i')
-        >>> bistr('I').lower('tr_TR')
-        bistr('I', 'ı')
+            >>> bistr('HELLO WORLD').lower()
+            bistr('HELLO WORLD', 'hello world', Alignment.identity(11))
+            >>> bistr('I').lower('en_US')
+            bistr('I', 'i')
+            >>> bistr('I').lower('tr_TR')
+            bistr('I', 'ı')
         """
 
         from ._icu import lower
@@ -532,12 +532,12 @@ class bistr:
         Converts this string to uppercase.  Unless you specify the `locale` parameter, the current system locale will be
         used.
 
-        >>> bistr('hello world').upper()
-        bistr('hello world', 'HELLO WORLD', Alignment.identity(11))
-        >>> bistr('i').upper('en_US')
-        bistr('i', 'I')
-        >>> bistr('i').upper('tr_TR')
-        bistr('i', 'İ')
+            >>> bistr('hello world').upper()
+            bistr('hello world', 'HELLO WORLD', Alignment.identity(11))
+            >>> bistr('i').upper('en_US')
+            bistr('i', 'I')
+            >>> bistr('i').upper('tr_TR')
+            bistr('i', 'İ')
         """
 
         from ._icu import upper
@@ -548,12 +548,12 @@ class bistr:
         Converts this string to title case.  Unless you specify the `locale` parameter, the current system locale will
         be used.
 
-        >>> bistr('hello world').title()
-        bistr('hello world', 'Hello World', Alignment.identity(11))
-        >>> bistr('istanbul').title('en_US')
-        bistr('istanbul', 'Istanbul', Alignment.identity(8))
-        >>> bistr('istanbul').title('tr_TR')
-        bistr('istanbul', 'İstanbul', Alignment.identity(8))
+            >>> bistr('hello world').title()
+            bistr('hello world', 'Hello World', Alignment.identity(11))
+            >>> bistr('istanbul').title('en_US')
+            bistr('istanbul', 'Istanbul', Alignment.identity(8))
+            >>> bistr('istanbul').title('tr_TR')
+            bistr('istanbul', 'İstanbul', Alignment.identity(8))
         """
 
         from ._icu import title
