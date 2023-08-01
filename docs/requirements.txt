@@ -11,7 +11,7 @@
 -i https://pypi.org/simple
 alabaster==0.7.12
 babel==2.9.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-certifi==2021.10.8
+certifi==2023.7.22
 charset-normalizer==2.0.12; python_version >= '3'
 docutils==0.17.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 git+https://github.com/tavianator/sphinx-js@44d94acfa61044963f5f7d9d94c7105400bdcfb3#egg=sphinx-js
