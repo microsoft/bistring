@@ -21,8 +21,7 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Text Processing :: General',
         'Typing :: Typed',
     ],
@@ -41,7 +40,7 @@ setup(
     },
     zip_safe=False,
     test_suite='tests',
-    python_requires='>=3.7',
+    python_requires='>=3.10',
     setup_requires=[
         'pytest-runner',
     ],
@@ -50,10 +49,12 @@ setup(
     ],
     extras_require={
         'dev': [
+            'exceptiongroup',
             'lxml',
             'mypy',
             'pytest',
             'regex',
+            'tomli',
         ],
     },
     tests_require=[
