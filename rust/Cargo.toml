@@ -1,0 +1,15 @@
+[package]
+name = "bistring"
+version = "0.5.0"
+authors = ["Tavian Barnes <tavianator@tavianator.com>"]
+edition = "2018"
+description = "Bidirectionally transformed strings"
+readme = "README.md"
+repository = "https://github.com/microsoft/bistring"
+license = "MIT"
+keywords = ["string", "text", "nlp"]
+categories = ["text-processing", "data-structures"]
+
+[dependencies]
+
+[dev-dependencies]
